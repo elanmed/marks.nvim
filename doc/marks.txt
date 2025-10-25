@@ -1,8 +1,45 @@
 *marks.txt*                                       Last change: 2025 October 25
 
 ==============================================================================
+Table of Contents                                    *marks-table-of-contents*
+
+Sample configuration ............................ |marks-sample-configuration|
+Configuration options .......................... |marks-configuration-options|
+`vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
+`vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
+
+==============================================================================
 `MARKS.NVIM`                                                *marks-marks.nvim*
 
 
+A set of utilities to smooth out native vim marks.
+
+
+------------------------------------------------------------------------------
+SAMPLE CONFIGURATION                              *marks-sample-configuration*
+
+
+>lua
+    vim.g.marks = {
+      -- defaults:
+      remap_m = true,
+      notify = true,
+    }
+<
+
+------------------------------------------------------------------------------
+CONFIGURATION OPTIONS                            *marks-configuration-options*
+
+
+
+                                                                              
+`VIM.G.MARKS.REMAP_M`                              *marks-vim.g.marks.remap_m*
+
+- TODO
+
+                                                                              
+`VIM.G.MARKS.NOTIFY`                                *marks-vim.g.marks.notify*
+
+- TODO
 
 vim:tw=78:ts=8:ft=help:norl:

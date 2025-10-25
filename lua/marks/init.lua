@@ -1,9 +1,35 @@
 local M = {}
 
+--- @generic T
+--- @param val T | nil
+--- @param default_val T
+--- @return T
+local default = function(val, default_val)
+  if val == nil then
+    return default_val
+  end
+  return val
+end
+
+--- @class MarksOpts
+--- @field remap_m? boolean
+--- @field notify? boolean
+
+local gopts = function()
+  --- @type MarksOpts
+  local opts = default(vim.g.marks, {})
+  opts = vim.deepcopy(opts)
+  opts.remap_m = default(opts.remap_m, true)
+  opts.notify = default(opts.notify, true)
+  return opts
+end
+
 --- @param level vim.log.levels
 --- @param msg string
 --- @param ... any
 local notify = function(level, msg, ...)
+  if not gopts().notify then return end
+
   msg = "[marks.nvim]: " .. msg
   vim.notify(msg:format(...), level)
 end
@@ -73,7 +99,7 @@ M.refresh_signs = function()
   notify(vim.log.levels.INFO, "Refreshing marks")
 end
 
-local _toggle_next_global_mark = function()
+local toggle_next_global_mark = function()
   for letter in global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
     if not global_mark_info then
@@ -93,7 +119,7 @@ local _toggle_next_global_mark = function()
   end
 end
 
-local _toggle_next_local_mark = function()
+local toggle_next_local_mark = function()
   for letter in local_marks:gmatch "." do
     local mark_row = get_buffer_mark_row(letter)
     if not mark_row then
@@ -109,7 +135,7 @@ local _toggle_next_local_mark = function()
 end
 
 --- @param direction "next"|"prev"
-local function _navigate_mark(direction)
+local function navigate_mark(direction)
   --- @type number[]
   local mark_row_list = {}
   for letter in (global_marks .. local_marks):gmatch "." do
@@ -146,7 +172,7 @@ local function _navigate_mark(direction)
   vim.api.nvim_win_set_cursor(0, { mark_row, 0, })
 end
 
-local _delete_buffer_marks = function()
+local delete_buffer_marks = function()
   local deleted = false
   for letter in (global_marks .. local_marks):gmatch "." do
     if get_buffer_mark_row(letter) then
