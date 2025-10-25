@@ -52,9 +52,14 @@ local function get_buffer_mark_row(mark_name)
   return mark[1]
 end
 
-local local_marks = ("abcdefghijklmnopqrstuvwxyz")
-local global_marks = local_marks:upper()
-for letter in (global_marks .. local_marks):gmatch "." do
+M.local_marks = ("abcdefghijklmnopqrstuvwxyz")
+M.global_marks = M.local_marks:upper()
+M.number_marks = "0123456789"
+M.builtin_marks = "[]<>`\"^.(){}"
+
+M.all_marks = M.global_marks .. M.local_marks .. M.number_marks .. M.builtin_marks
+
+for letter in (M.all_marks):gmatch "." do
   vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
 end
 
@@ -67,7 +72,7 @@ local function refresh_mark_signs(bufnr)
   local group = ""
   vim.fn.sign_unplace(group, { buffer = bufnr, })
 
-  for letter in (global_marks .. local_marks):gmatch "." do
+  for letter in (M.all_marks):gmatch "." do
     if get_buffer_mark_row(letter) then
       local id = letter:byte() * 100
       local lnum = unpack(vim.api.nvim_buf_get_mark(bufnr, letter))
@@ -99,8 +104,8 @@ M.refresh_signs = function()
   notify(vim.log.levels.INFO, "Refreshing marks")
 end
 
-local toggle_next_global_mark = function()
-  for letter in global_marks:gmatch "." do
+M.toggle_next_global_mark = function()
+  for letter in M.global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
     if not global_mark_info then
       set_mark(letter)
@@ -119,8 +124,8 @@ local toggle_next_global_mark = function()
   end
 end
 
-local toggle_next_local_mark = function()
-  for letter in local_marks:gmatch "." do
+M.toggle_next_local_mark = function()
+  for letter in M.local_marks:gmatch "." do
     local mark_row = get_buffer_mark_row(letter)
     if not mark_row then
       set_mark(letter)
@@ -135,10 +140,11 @@ local toggle_next_local_mark = function()
 end
 
 --- @param direction "next"|"prev"
-local function navigate_mark(direction)
+M.navigate_mark = function(direction)
   --- @type number[]
   local mark_row_list = {}
-  for letter in (global_marks .. local_marks):gmatch "." do
+  -- TODO support any set of marks
+  for letter in (M.global_marks .. M.local_marks):gmatch "." do
     local mark_row = get_buffer_mark_row(letter)
     if mark_row then
       table.insert(mark_row_list, mark_row)
@@ -172,9 +178,10 @@ local function navigate_mark(direction)
   vim.api.nvim_win_set_cursor(0, { mark_row, 0, })
 end
 
-local delete_buffer_marks = function()
+M.delete_buffer_marks = function()
   local deleted = false
-  for letter in (global_marks .. local_marks):gmatch "." do
+  -- TODO support any set of marks
+  for letter in (M.global_marks .. M.local_marks):gmatch "." do
     if get_buffer_mark_row(letter) then
       vim.api.nvim_buf_del_mark(0, letter)
       deleted = true
