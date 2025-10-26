@@ -36,4 +36,4 @@ vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
 
 ## TODO
 - [ ] Testing
-- [ ] Support builtin marks, refreshing when necessary
+- [ ] Investigate extmarks vs `sign_place`

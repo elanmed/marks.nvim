@@ -65,6 +65,6 @@ TODO                                                              *marks-todo*
 
 
 - [ ] Testing
-- [ ] Support builtin marks, refreshing when necessary
+- [ ] Investigate extmarks vs `sign_place`
 
 vim:tw=78:ts=8:ft=help:norl:

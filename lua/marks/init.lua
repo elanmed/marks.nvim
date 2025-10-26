@@ -4,8 +4,11 @@ M.char_sets = {}
 M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
 M.char_sets.global_marks = M.char_sets.local_marks:upper()
 M.char_sets.number_marks = "0123456789"
--- M.char_sets.builtin_marks = "[]<>`\"^.(){}"
-M.char_sets.all_marks = M.char_sets.global_marks .. M.char_sets.local_marks .. M.char_sets.number_marks
+M.char_sets.builtin_marks = "[]<>`\"^.(){}"
+M.char_sets.all_marks = M.char_sets.global_marks ..
+    M.char_sets.local_marks ..
+    M.char_sets.number_marks ..
+    M.char_sets.builtin_marks
 
 --- @generic T
 --- @param val T | nil
@@ -89,13 +92,74 @@ M.setup = function()
     vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
   end
 
-  -- TODO handle refresh for builtin_marks
+  local events = {}
 
-  vim.api.nvim_create_autocmd("BufWinEnter", {
-    callback = function(args)
-      refresh_mark_signs(args.buf)
-    end,
-  })
+  -- <> first/last character of the last selected area
+  if opts.highlight_char_set:match "[<>]" then
+    events["ModeChanged"] = true
+  end
+
+  if opts.highlight_char_set:match "[%a]" then
+    events["BufEnter"] = true
+    events["BufWinEnter"] = true
+  end
+
+  -- [] first/last character of the last changed or yanked text
+  if opts.highlight_char_set:match "[%[%]]" then
+    events["TextChanged"] = true
+    events["TextChangedI"] = true
+    events["TextChangedP"] = true
+    events["TextYankPost"] = true
+  end
+
+  -- ` cursor before the latest jump, or last m
+  if opts.highlight_char_set:match "[`]" then
+    events["CursorMoved"] = true
+    events["BufEnter"] = true
+    events["WinEnter"] = true
+    events["TabEnter"] = true
+    events["BufDelete"] = true
+  end
+
+  -- " cursor before when last exiting the current buffer
+  if opts.highlight_char_set:match '["]' then
+    events["BufLeave"] = true
+    events["BufWinLeave"] = true
+  end
+
+  -- ^ cursor when insert mode was last stopped
+  if opts.highlight_char_set:match "[%^]" then
+    events["InsertLeave"] = true
+  end
+
+  -- . cursor where the last change was made
+  if opts.highlight_char_set:match "[%.]" then
+    events["TextChanged"] = true
+    events["TextChangedI"] = true
+    events["TextChangedP"] = true
+  end
+
+  -- () start/end of the current sentence
+  -- {} start/end of the current paragraph
+  if opts.highlight_char_set:match "[%(%)%{%}]" then
+    events["TextChanged"] = true
+    events["TextChangedI"] = true
+    events["TextChangedP"] = true
+    events["CursorMoved"] = true
+    events["CursorMovedI"] = true
+  end
+
+  local event_list = {}
+  for event, _ in pairs(events) do
+    table.insert(event_list, event)
+  end
+
+  if vim.tbl_count(events) > 0 then
+    vim.api.nvim_create_autocmd(event_list, {
+      callback = function(args) refresh_mark_signs(args.buf) end,
+      desc = "Refresh the mark signs",
+    })
+  end
 
   if opts.remap_m then
     vim.keymap.set({ "n", "v", "x", }, "m", function()
