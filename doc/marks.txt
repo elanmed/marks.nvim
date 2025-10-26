@@ -7,7 +7,7 @@ Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
 `vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
-`vim.g.marks.highlighted_char_set` .. |marks-vim.g.marks.highlighted_char_set|
+`vim.g.marks.highlight_char_set` ...... |marks-vim.g.marks.highlight_char_set|
 TODO ............................................................ |marks-todo|
 
 ==============================================================================
@@ -27,7 +27,7 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
       -- defaults:
       notify = true,
       remap_m = true,
-      highlighted_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
+      highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
     }
     
     vim.keymap.set("n", "]a", function() marks.navigate_local_marks { direction = "next", } end)
@@ -56,7 +56,7 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
 - Remap `m` to refresh the sign column when setting a mark
 
                                                                               
-`VIM.G.MARKS.HIGHLIGHTED_CHAR_SET`    *marks-vim.g.marks.highlighted_char_set*
+`VIM.G.MARKS.HIGHLIGHT_CHAR_SET`        *marks-vim.g.marks.highlight_char_set*
 
 - The set of mark characters to render in the sign column
 

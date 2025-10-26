@@ -10,7 +10,7 @@ vim.g.marks = {
   -- defaults:
   notify = true,
   remap_m = true,
-  highlighted_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
+  highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
 }
 
 vim.keymap.set("n", "]a", function() marks.navigate_local_marks { direction = "next", } end)
@@ -31,7 +31,7 @@ vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
 #### `vim.g.marks.remap_m`
 - Remap `m` to refresh the sign column when setting a mark
 
-#### `vim.g.marks.highlighted_char_set`
+#### `vim.g.marks.highlight_char_set`
 - The set of mark characters to render in the sign column 
 
 ## TODO
