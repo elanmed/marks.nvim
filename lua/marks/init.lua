@@ -20,6 +20,7 @@ end
 
 --- @class MarksOpts
 --- @field notify? boolean
+--- @field remap_m? boolean
 --- @field highlight_char_set? string
 
 local gopts = function()
@@ -27,6 +28,7 @@ local gopts = function()
   local opts = default(vim.g.marks, {})
   opts = vim.deepcopy(opts)
   opts.notify = default(opts.notify, true)
+  opts.remap_m = default(opts.remap_m, true)
   opts.highlight_char_set = default(opts.highlight_char_set, M.char_sets.global_marks .. M.char_sets.local_marks)
   return opts
 end
@@ -77,15 +79,13 @@ local function refresh_mark_signs(bufnr)
   end
 end
 
--- TODO: can this be autoloaded?
---- @class MarksSetupOpts
---- @field remap_m? boolean
---- @param opts MarksSetupOpts
-M.setup = function(opts)
-  opts = vim.deepcopy(default(opts, {}))
-  opts.remap_m = default(opts.remap_m, true)
+vim.g.marks_setup_called = false
+M.setup = function()
+  if vim.g.marks_setup_called then return end
+  vim.g.marks_setup_called = true
+  local opts = gopts()
 
-  for letter in (gopts().highlight_char_set):gmatch "." do
+  for letter in (opts.highlight_char_set):gmatch "." do
     vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
   end
 
