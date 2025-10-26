@@ -4,9 +4,8 @@ M.char_sets = {}
 M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
 M.char_sets.global_marks = M.char_sets.local_marks:upper()
 M.char_sets.number_marks = "0123456789"
-M.char_sets.builtin_marks = "[]<>`\"^.(){}"
-M.char_sets.all_marks = M.char_sets.global_marks ..
-    M.char_sets.local_marks .. M.char_sets.number_marks .. M.char_sets.builtin_marks
+-- M.char_sets.builtin_marks = "[]<>`\"^.(){}"
+M.char_sets.all_marks = M.char_sets.global_marks .. M.char_sets.local_marks .. M.char_sets.number_marks
 
 --- @generic T
 --- @param val T | nil
@@ -90,7 +89,7 @@ M.setup = function(opts)
     vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
   end
 
-  -- TODO handle refresh for builtin marks
+  -- TODO handle refresh for builtin_marks
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
@@ -234,9 +233,9 @@ M.navigate_local_marks = function(opts)
 
   table.sort(mark_pos_list, function(a, b)
     if opts.direction == "next" then
-      return b[1] > a[1]
+      return b.row > a.row
     else
-      return b[1] < a[1]
+      return b.row < a.row
     end
   end)
 
