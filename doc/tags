@@ -2,6 +2,6 @@ marks-configuration-options	marks.txt	/*marks-configuration-options*
 marks-marks.nvim	marks.txt	/*marks-marks.nvim*
 marks-sample-configuration	marks.txt	/*marks-sample-configuration*
 marks-table-of-contents	marks.txt	/*marks-table-of-contents*
+marks-vim.g.marks.highlighted_char_set	marks.txt	/*marks-vim.g.marks.highlighted_char_set*
 marks-vim.g.marks.notify	marks.txt	/*marks-vim.g.marks.notify*
-marks-vim.g.marks.remap_m	marks.txt	/*marks-vim.g.marks.remap_m*
 marks.txt	marks.txt	/*marks.txt*

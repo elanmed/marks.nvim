@@ -5,8 +5,8 @@ Table of Contents                                    *marks-table-of-contents*
 
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
-`vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
+`vim.g.marks.highlighted_char_set` .. |marks-vim.g.marks.highlighted_char_set|
 
 ==============================================================================
 `MARKS.NVIM`                                                *marks-marks.nvim*
@@ -22,8 +22,14 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
 >lua
     vim.g.marks = {
       -- defaults:
-      remap_m = true,
       notify = true,
+      highlighted_char_set = marks.local_marks .. marks.global_marks,
+    }
+    
+    local marks = require "marks"
+    marks.setup {
+      -- defaults:
+      remap_m = true,
     }
 <
 
@@ -33,12 +39,12 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
 
 
                                                                               
-`VIM.G.MARKS.REMAP_M`                              *marks-vim.g.marks.remap_m*
+`VIM.G.MARKS.NOTIFY`                                *marks-vim.g.marks.notify*
 
 - TODO
 
                                                                               
-`VIM.G.MARKS.NOTIFY`                                *marks-vim.g.marks.notify*
+`VIM.G.MARKS.HIGHLIGHTED_CHAR_SET`    *marks-vim.g.marks.highlighted_char_set*
 
 - TODO
 
