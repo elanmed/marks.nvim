@@ -1,5 +1,13 @@
 local M = {}
 
+M.char_sets = {}
+M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
+M.char_sets.global_marks = M.char_sets.local_marks:upper()
+M.char_sets.number_marks = "0123456789"
+M.char_sets.builtin_marks = "[]<>`\"^.(){}"
+M.char_sets.all_marks = M.char_sets.global_marks ..
+    M.char_sets.local_marks .. M.char_sets.number_marks .. M.char_sets.builtin_marks
+
 --- @generic T
 --- @param val T | nil
 --- @param default_val T
@@ -13,12 +21,14 @@ end
 
 --- @class MarksOpts
 --- @field notify? boolean
+--- @field highlight_char_set? string
 
 local gopts = function()
   --- @type MarksOpts
   local opts = default(vim.g.marks, {})
   opts = vim.deepcopy(opts)
   opts.notify = default(opts.notify, true)
+  opts.highlight_char_set = default(opts.highlight_char_set, M.char_sets.global_marks .. M.char_sets.local_marks)
   return opts
 end
 
@@ -32,14 +42,8 @@ local notify = function(level, msg, ...)
   vim.notify(msg:format(...), level)
 end
 
-M.local_marks = ("abcdefghijklmnopqrstuvwxyz")
-M.global_marks = M.local_marks:upper()
-M.number_marks = "0123456789"
-M.builtin_marks = "[]<>`\"^.(){}"
-M.all_marks = M.global_marks .. M.local_marks .. M.number_marks .. M.builtin_marks
-
 --- @param mark_name string
-local function get_buffer_mark_info(mark_name)
+local function get_buffer_mark_pos(mark_name)
   local mark = vim.api.nvim_buf_get_mark(0, mark_name)
   if mark[1] == 0 and mark[2] == 0 then
     return nil
@@ -65,8 +69,8 @@ local function refresh_mark_signs(bufnr)
   local group = ""
   vim.fn.sign_unplace(group, { buffer = bufnr, })
 
-  for letter in (M.all_marks):gmatch "." do
-    if get_buffer_mark_info(letter) ~= nil then
+  for letter in (gopts().highlight_char_set):gmatch "." do
+    if get_buffer_mark_pos(letter) ~= nil then
       local id = letter:byte() * 100
       local lnum = unpack(vim.api.nvim_buf_get_mark(bufnr, letter))
       vim.fn.sign_place(id, group, letter, bufnr, { lnum = lnum, priority = 10, })
@@ -76,16 +80,16 @@ end
 
 --- @class MarksSetupOpts
 --- @field remap_m? boolean
---- @field highlighted_char_set? string
 --- @param opts MarksSetupOpts
 M.setup = function(opts)
   opts = vim.deepcopy(default(opts, {}))
   opts.remap_m = default(opts.remap_m, true)
-  opts.highlighted_char_set = default(opts.highlighted_char_set, M.global_marks .. M.local_marks)
 
-  for letter in (opts.highlighted_char_set):gmatch "." do
+  for letter in (gopts().highlight_char_set):gmatch "." do
     vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
   end
+
+  -- TODO handle refresh for builtin marks
 
   vim.api.nvim_create_autocmd("BufWinEnter", {
     callback = function(args)
@@ -103,7 +107,8 @@ M.setup = function(opts)
 end
 
 local function set_mark(letter)
-  vim.api.nvim_buf_set_mark(0, letter, vim.fn.line ".", 0, {})
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_buf_set_mark(0, letter, cursor_pos[1], cursor_pos[2], {})
   refresh_mark_signs(0)
   notify(vim.log.levels.INFO, "Set mark %s to line %s", letter, vim.fn.line ".")
 end
@@ -120,7 +125,7 @@ M.refresh_signs = function()
 end
 
 M.toggle_next_global_mark = function()
-  for letter in M.global_marks:gmatch "." do
+  for letter in M.char_sets.global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
     if not global_mark_info then
       set_mark(letter)
@@ -140,64 +145,75 @@ M.toggle_next_global_mark = function()
 end
 
 M.toggle_next_local_mark = function()
-  for letter in M.local_marks:gmatch "." do
-    local mark_info = get_buffer_mark_info(letter)
-    if mark_info == nil then
+  for letter in M.char_sets.local_marks:gmatch "." do
+    local mark_pos = get_buffer_mark_pos(letter)
+    if mark_pos == nil then
       set_mark(letter)
       return
     end
 
-    if mark_info[1] == vim.fn.line "." then
+    if mark_pos[1] == vim.fn.line "." then
       del_mark(letter)
       return
     end
   end
 end
 
---- @param direction "next"|"prev"
-M.navigate_mark = function(direction)
-  --- @type number[]
-  local mark_row_list = {}
+--- @class MarksNavigateLocalMarksOpts
+--- @field direction "next"|"prev"
+--- @field navigate_char_set? string
+--- @param opts MarksNavigateLocalMarksOpts
+M.navigate_local_marks = function(opts)
+  opts = vim.deepcopy(default(opts, {}))
+  opts.navigate_char_set = default(opts.navigate_char_set, M.char_sets.local_marks .. M.char_sets.global_marks)
+
+  if opts.direction ~= "next" and opts.direction ~= "prev" then
+    notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
+    return
+  end
+
+  --- @type number[][]
+  local mark_pos_list = {}
   -- TODO support any set of marks
-  for letter in (M.global_marks .. M.local_marks):gmatch "." do
-    local mark_info = get_buffer_mark_info(letter)
-    if mark_info ~= nil then
-      table.insert(mark_row_list, mark_info[1])
+  for letter in (opts.navigate_char_set):gmatch "." do
+    local mark_pos = get_buffer_mark_pos(letter)
+    if mark_pos ~= nil then
+      table.insert(mark_pos_list, mark_pos)
     end
   end
 
-  table.sort(mark_row_list, function(a, b)
-    if direction == "next" then
-      return b > a
+  table.sort(mark_pos_list, function(a, b)
+    if opts.direction == "next" then
+      return b[1] > a[1]
     else
-      return b < a
+      return b[1] < a[1]
     end
   end)
 
-  for _, mark_row in ipairs(mark_row_list) do
+  for _, mark_pos in ipairs(mark_pos_list) do
     local row_condition = (function()
-      if direction == "next" then
-        return mark_row > vim.fn.line "."
+      if opts.direction == "next" then
+        return mark_pos[1] > vim.fn.line "."
       end
-      return mark_row < vim.fn.line "."
+      return mark_pos[1] < vim.fn.line "."
     end)()
 
     if row_condition then
-      vim.api.nvim_win_set_cursor(0, { mark_row, 0, })
+      vim.api.nvim_win_set_cursor(0, { mark_pos[1], mark_pos[2], })
       return
     end
   end
 
-  if #mark_row_list == 0 then return end
-  local mark_row = mark_row_list[1]
-  vim.api.nvim_win_set_cursor(0, { mark_row, 0, })
+  if #mark_pos_list == 0 then return end
+  local mark_pos = mark_pos_list[1]
+  vim.api.nvim_win_set_cursor(0, { mark_pos[1], mark_pos[2], })
 end
 
 M.delete_buffer_marks = function()
   local deleted = false
   -- TODO support any set of marks
-  for letter in (M.global_marks .. M.local_marks):gmatch "." do
-    if get_buffer_mark_info(letter) ~= nil then
+  for letter in (M.char_sets.global_marks .. M.char_sets.local_marks):gmatch "." do
+    if get_buffer_mark_pos(letter) ~= nil then
       vim.api.nvim_buf_del_mark(0, letter)
       deleted = true
     end
