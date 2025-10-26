@@ -8,12 +8,13 @@ Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
 `vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
 `vim.g.marks.highlighted_char_set` .. |marks-vim.g.marks.highlighted_char_set|
+TODO ............................................................ |marks-todo|
 
 ==============================================================================
 `MARKS.NVIM`                                                *marks-marks.nvim*
 
 
-A set of utilities to smooth out native vim marks.
+A set of utilities to upgrade native vim marks.
 
 
 ------------------------------------------------------------------------------
@@ -58,5 +59,12 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
 `VIM.G.MARKS.HIGHLIGHTED_CHAR_SET`    *marks-vim.g.marks.highlighted_char_set*
 
 - The set of mark characters to render in the sign column
+
+------------------------------------------------------------------------------
+TODO                                                              *marks-todo*
+
+
+- [ ] Testing
+- [ ] Support builtin marks, refreshing when necessary
 
 vim:tw=78:ts=8:ft=help:norl:

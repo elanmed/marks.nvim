@@ -1,6 +1,6 @@
 # `marks.nvim`
 
-A set of utilities to smooth out native vim marks.
+A set of utilities to upgrade native vim marks.
 
 ## Sample configuration
 
@@ -33,3 +33,7 @@ vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
 
 #### `vim.g.marks.highlighted_char_set`
 - The set of mark characters to render in the sign column 
+
+## TODO
+- [ ] Testing
+- [ ] Support builtin marks, refreshing when necessary
