@@ -5,14 +5,14 @@ A set of utilities to upgrade native vim marks.
 ## Sample configuration
 
 ```lua 
+local marks = require "marks"
 vim.g.marks = {
   -- defaults:
   notify = true,
   remap_m = true,
-  highlighted_char_set = marks.local_marks .. marks.global_marks,
+  highlighted_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
 }
 
-local marks = require "marks"
 vim.keymap.set("n", "]a", function() marks.navigate_local_marks { direction = "next", } end)
 vim.keymap.set("n", "[a", function() marks.navigate_local_marks { direction = "prev", } end)
 vim.keymap.set("n", "]s", function() marks.navigate_global_marks { direction = "next", } end)

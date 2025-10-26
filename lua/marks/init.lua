@@ -121,7 +121,7 @@ M.setup = function()
     events["BufDelete"] = true
   end
 
-  -- " cursor before when last exiting the current buffer
+  -- " cursor when last exiting the current buffer
   if opts.highlight_char_set:match '["]' then
     events["BufLeave"] = true
     events["BufWinLeave"] = true
