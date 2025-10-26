@@ -48,7 +48,7 @@ local function get_buffer_mark_pos(mark_name)
   if mark[1] == 0 and mark[2] == 0 then
     return nil
   end
-  return mark
+  return { row = mark[1], col = mark[2], }
 end
 
 --- @param mark_name string
@@ -57,7 +57,7 @@ local function get_global_mark_info(mark_name)
   if mark[1] == 0 and mark[2] == 0 and mark[3] == 0 and mark[4] == "" then
     return nil
   end
-  return { row = mark[1], bufnr = mark[3], }
+  return { row = mark[1], col = mark[2], bufnr = mark[3], bufname = mark[4], }
 end
 
 --- @param bufnr number
@@ -78,6 +78,7 @@ local function refresh_mark_signs(bufnr)
   end
 end
 
+-- TODO: can this be autoloaded?
 --- @class MarksSetupOpts
 --- @field remap_m? boolean
 --- @param opts MarksSetupOpts
@@ -152,11 +153,61 @@ M.toggle_next_local_mark = function()
       return
     end
 
-    if mark_pos[1] == vim.fn.line "." then
+    if mark_pos.row == vim.fn.line "." then
       del_mark(letter)
       return
     end
   end
+end
+
+--- @class MarksNavigateGlobalMarksOpts
+--- @field direction "next"|"prev"
+--- @param opts MarksNavigateGlobalMarksOpts
+M.navigate_global_marks = function(opts)
+  opts = default(opts, {})
+  if opts.direction ~= "next" and opts.direction ~= "prev" then
+    notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
+    return
+  end
+
+  local global_marks_str = (function()
+    if opts.direction == "next" then
+      return M.char_sets.global_marks
+    end
+    return M.char_sets.global_marks:reverse()
+  end)()
+
+  --- @type string[]
+  local global_marks_list = {}
+  for global_mark in global_marks_str:gmatch "." do
+    if get_global_mark_info(global_mark) then
+      table.insert(global_marks_list, global_mark)
+    end
+  end
+
+  local curr_buf = vim.api.nvim_get_current_buf()
+  local curr_idx = 1
+  for idx, global_mark in ipairs(global_marks_list) do
+    local mark_info = assert(get_global_mark_info(global_mark))
+    if curr_buf == mark_info.bufnr then
+      curr_idx = idx
+    end
+  end
+
+  if #global_marks_list == 0 then
+    notify(vim.log.levels.INFO, "No global marks")
+    return
+  end
+  if #global_marks_list == 1 then return end
+
+  local next_idx = curr_idx + 1
+  if next_idx > #global_marks_list then
+    next_idx = 1
+  end
+  local next_mark = global_marks_list[next_idx]
+  local next_mark_info = assert(get_global_mark_info(next_mark))
+  vim.cmd.edit(next_mark_info.bufname)
+  vim.api.nvim_win_set_cursor(0, { next_mark_info.row, next_mark_info.col, })
 end
 
 --- @class MarksNavigateLocalMarksOpts
@@ -172,9 +223,8 @@ M.navigate_local_marks = function(opts)
     return
   end
 
-  --- @type number[][]
+  --- @type {row: number, col: number}[]
   local mark_pos_list = {}
-  -- TODO support any set of marks
   for letter in (opts.navigate_char_set):gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos ~= nil then
@@ -193,20 +243,20 @@ M.navigate_local_marks = function(opts)
   for _, mark_pos in ipairs(mark_pos_list) do
     local row_condition = (function()
       if opts.direction == "next" then
-        return mark_pos[1] > vim.fn.line "."
+        return mark_pos.row > vim.fn.line "."
       end
-      return mark_pos[1] < vim.fn.line "."
+      return mark_pos.row < vim.fn.line "."
     end)()
 
     if row_condition then
-      vim.api.nvim_win_set_cursor(0, { mark_pos[1], mark_pos[2], })
+      vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col, })
       return
     end
   end
 
   if #mark_pos_list == 0 then return end
   local mark_pos = mark_pos_list[1]
-  vim.api.nvim_win_set_cursor(0, { mark_pos[1], mark_pos[2], })
+  vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col, })
 end
 
 M.delete_buffer_marks = function()
