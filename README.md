@@ -37,3 +37,8 @@ vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
 ## TODO
 - [ ] Testing
 - [ ] Investigate extmarks vs `sign_place`
+
+## Similar plugins
+- [marks.nvim](https://github.com/chentoast/marks.nvim)
+- [vim-signature](https://github.com/kshenoy/vim-signature)
+- [vim-bookmarks](https://github.com/MattesGroeger/vim-bookmarks)

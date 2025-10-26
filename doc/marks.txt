@@ -9,6 +9,7 @@ Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
 `vim.g.marks.highlight_char_set` ...... |marks-vim.g.marks.highlight_char_set|
 TODO ............................................................ |marks-todo|
+Similar plugins ...................................... |marks-similar-plugins|
 
 ==============================================================================
 `MARKS.NVIM`                                                *marks-marks.nvim*
@@ -66,5 +67,13 @@ TODO                                                              *marks-todo*
 
 - [ ] Testing
 - [ ] Investigate extmarks vs `sign_place`
+
+------------------------------------------------------------------------------
+SIMILAR PLUGINS                                        *marks-similar-plugins*
+
+
+- marks.nvim <https://github.com/chentoast/marks.nvim>
+- vim-signature <https://github.com/kshenoy/vim-signature>
+- vim-bookmarks <https://github.com/MattesGroeger/vim-bookmarks>
 
 vim:tw=78:ts=8:ft=help:norl:
