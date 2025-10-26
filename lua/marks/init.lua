@@ -28,11 +28,13 @@ end
 
 local gopts = function()
   --- @type MarksOpts
-  local opts = default(vim.g.marks, {})
-  opts = vim.deepcopy(opts)
-  opts.notify = default(opts.notify, true)
-  opts.remap_m = default(opts.remap_m, true)
-  opts.highlight_char_set = default(opts.highlight_char_set, M.char_sets.global_marks .. M.char_sets.local_marks)
+  local opts = {}
+  opts.notify = default(vim.tbl_get(vim.g.marks, "notify"), true)
+  opts.remap_m = default(vim.tbl_get(vim.g.marks, "remap_m"), true)
+  opts.highlight_char_set = default(
+    vim.tbl_get(vim.g.marks, "highlight_char_set"),
+    M.char_sets.global_marks .. M.char_sets.local_marks
+  )
   return opts
 end
 
@@ -227,8 +229,7 @@ end
 --- @field direction "next"|"prev"
 --- @param opts MarksNavigateGlobalMarksOpts
 M.navigate_global_marks = function(opts)
-  opts = default(opts, {})
-  if opts.direction ~= "next" and opts.direction ~= "prev" then
+  if vim.tbl_get(opts, "direction") ~= "next" and vim.tbl_get(opts, "direction") ~= "prev" then
     notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
     return
   end
@@ -276,15 +277,19 @@ end
 --- @class MarksNavigateLocalMarksOpts
 --- @field direction "next"|"prev"
 --- @field navigate_char_set? string
---- @param opts MarksNavigateLocalMarksOpts
-M.navigate_local_marks = function(opts)
-  opts = vim.deepcopy(default(opts, {}))
-  opts.navigate_char_set = default(opts.navigate_char_set, M.char_sets.local_marks .. M.char_sets.global_marks)
-
-  if opts.direction ~= "next" and opts.direction ~= "prev" then
+--- @param _opts MarksNavigateLocalMarksOpts
+M.navigate_local_marks = function(_opts)
+  if vim.tbl_get(_opts, "direction") ~= "next" and vim.tbl_get(_opts, "direction") ~= "prev" then
     notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
     return
   end
+
+  local opts = {}
+  opts.navigate_char_set = default(
+    vim.tbl_get(_opts, "navigate_char_set"),
+    M.char_sets.local_marks .. M.char_sets.global_marks
+  )
+  opts.direction = _opts.direction
 
   --- @type {row: number, col: number}[]
   local mark_pos_list = {}
@@ -324,7 +329,6 @@ end
 
 M.delete_buffer_marks = function()
   local deleted = false
-  -- TODO support any set of marks
   for letter in (M.char_sets.global_marks .. M.char_sets.local_marks):gmatch "." do
     if get_buffer_mark_pos(letter) ~= nil then
       vim.api.nvim_buf_del_mark(0, letter)

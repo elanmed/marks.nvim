@@ -36,7 +36,7 @@ vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
 
 ## TODO
 - [ ] Testing
-- [ ] Investigate extmarks vs `sign_place`
+- [ ] Highlight column(s) related to a mark
 
 ## Similar plugins
 - [marks.nvim](https://github.com/chentoast/marks.nvim)

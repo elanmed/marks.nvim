@@ -66,7 +66,7 @@ TODO                                                              *marks-todo*
 
 
 - [ ] Testing
-- [ ] Investigate extmarks vs `sign_place`
+- [ ] Highlight column(s) related to a mark
 
 ------------------------------------------------------------------------------
 SIMILAR PLUGINS                                        *marks-similar-plugins*
