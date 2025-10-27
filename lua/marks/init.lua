@@ -103,7 +103,7 @@ local function refresh_mark_signs(bufnr)
       id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, }
     )
     if not ok then
-       notify(vim.log.levels.ERROR, tostring(error)
+      notify(vim.log.levels.ERROR, tostring(error))
     end
 
     if letter:match "%a" then goto continue end
