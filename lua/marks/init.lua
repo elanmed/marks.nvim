@@ -1,5 +1,8 @@
 local M = {}
 
+local ns = vim.api.nvim_create_namespace "marks.nvim"
+local hl = "Mark"
+
 M.char_sets = {}
 M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
 M.char_sets.global_marks = M.char_sets.local_marks:upper()
@@ -72,15 +75,29 @@ local function refresh_mark_signs(bufnr)
     bufnr = vim.api.nvim_get_current_buf()
   end
 
-  local group = ""
-  vim.fn.sign_unplace(group, { buffer = bufnr, })
+  local sign_group = "marks.nvim"
+  vim.fn.sign_unplace(sign_group, { buffer = bufnr, })
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   for letter in (gopts().highlight_char_set):gmatch "." do
-    if get_buffer_mark_pos(letter) ~= nil then
-      local id = letter:byte() * 100
-      local lnum = unpack(vim.api.nvim_buf_get_mark(bufnr, letter))
-      vim.fn.sign_place(id, group, letter, bufnr, { lnum = lnum, priority = 10, })
-    end
+    local mark_pos = get_buffer_mark_pos(letter)
+    if mark_pos == nil then goto continue end
+    local id = letter:byte() * 100
+
+    local priority = (function()
+      if letter:match "%a" then
+        return 20
+      end
+      return 10
+    end)()
+    vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, })
+
+    if letter:match "%a" then goto continue end
+
+    local row_zero_indexed = mark_pos.row - 1
+    vim.hl.range(bufnr, ns, hl, { row_zero_indexed, mark_pos.col, }, { row_zero_indexed, mark_pos.col, })
+
+    ::continue::
   end
 end
 
@@ -91,7 +108,7 @@ M.setup = function()
   local opts = gopts()
 
   for letter in (opts.highlight_char_set):gmatch "." do
-    vim.fn.sign_define(letter, { text = letter, texthl = "Mark", })
+    vim.fn.sign_define(letter, { text = letter, texthl = hl, })
   end
 
   local events = {}
