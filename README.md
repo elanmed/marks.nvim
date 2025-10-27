@@ -2,6 +2,9 @@
 
 A set of utilities to improve your experience with vim marks.
 
+## Status
+- In progress, some bugs, not tested
+
 ## Features
 - Renders a sign at the row of the mark in the sign column (`MarkRow`)
     - The set of marks to render a sign for is configurable

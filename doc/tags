@@ -3,6 +3,7 @@ marks-features	marks.txt	/*marks-features*
 marks-marks.nvim	marks.txt	/*marks-marks.nvim*
 marks-sample-configuration	marks.txt	/*marks-sample-configuration*
 marks-similar-plugins	marks.txt	/*marks-similar-plugins*
+marks-status	marks.txt	/*marks-status*
 marks-table-of-contents	marks.txt	/*marks-table-of-contents*
 marks-todo	marks.txt	/*marks-todo*
 marks-vim.g.marks.highlight_char_set	marks.txt	/*marks-vim.g.marks.highlight_char_set*

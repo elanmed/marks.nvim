@@ -3,6 +3,7 @@
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
 
+Status ........................................................ |marks-status|
 Features .................................................... |marks-features|
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
@@ -18,6 +19,12 @@ Similar plugins ...................................... |marks-similar-plugins|
 
 A set of utilities to improve your experience with vim marks.
 
+
+------------------------------------------------------------------------------
+STATUS                                                          *marks-status*
+
+
+- In progress, some bugs, not tested
 
 ------------------------------------------------------------------------------
 FEATURES                                                      *marks-features*
