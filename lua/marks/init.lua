@@ -1,7 +1,6 @@
 local M = {}
 
 local ns = vim.api.nvim_create_namespace "marks.nvim"
-local hl = "Mark"
 
 M.char_sets = {}
 M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
@@ -104,7 +103,7 @@ local function refresh_mark_signs(bufnr)
     if letter:match "%a" then goto continue end
 
     local row_zero_indexed = mark_pos.row - 1
-    vim.hl.range(bufnr, ns, hl, { row_zero_indexed, mark_pos.col, }, { row_zero_indexed, mark_pos.col, })
+    vim.hl.range(bufnr, ns, "MarkCol", { row_zero_indexed, mark_pos.col, }, { row_zero_indexed, mark_pos.col, })
 
     ::continue::
   end
@@ -116,8 +115,11 @@ M.setup = function()
   vim.g.marks_setup_called = true
   local opts = gopts()
 
+  vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
+  vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
+
   for letter in (opts.highlight_char_set):gmatch "." do
-    vim.fn.sign_define(letter, { text = letter, texthl = hl, })
+    vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow", })
   end
 
   local events = {}
