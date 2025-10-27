@@ -21,6 +21,10 @@ vim.keymap.set("n", "<leader>ml", marks.toggle_next_local_mark)
 vim.keymap.set("n", "<leader>mg", marks.toggle_next_global_mark)
 vim.keymap.set("n", "<leader>me", marks.refresh_signs)
 vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
+
+-- defaults
+vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
+vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 ```
 
 ## Configuration options

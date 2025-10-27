@@ -1,4 +1,4 @@
-*marks.txt*                                       Last change: 2025 October 25
+*marks.txt*                                       Last change: 2025 October 26
 
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
@@ -39,6 +39,10 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
     vim.keymap.set("n", "<leader>mg", marks.toggle_next_global_mark)
     vim.keymap.set("n", "<leader>me", marks.refresh_signs)
     vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
+    
+    -- defaults
+    vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
+    vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 <
 
 ------------------------------------------------------------------------------
