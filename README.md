@@ -48,9 +48,8 @@ vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 
 ## TODO
 - [ ] Testing
-- [ ] Highlight column(s) related to a mark
 
 ## Similar plugins
-- [marks.nvim](https://github.com/chentoast/marks.nvim)
+- [chentoast/marks.nvim](https://github.com/chentoast/marks.nvim) (sorry for taking duplicate name 😅)
 - [vim-signature](https://github.com/kshenoy/vim-signature)
 - [vim-bookmarks](https://github.com/MattesGroeger/vim-bookmarks)
