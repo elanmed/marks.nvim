@@ -75,6 +75,15 @@ local function refresh_mark_signs(bufnr)
     bufnr = vim.api.nvim_get_current_buf()
   end
 
+  if not vim.api.nvim_buf_is_valid(bufnr) then return end
+
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  if bufname == "" then return end
+
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr, })
+  local is_normal_buf = buftype == ""
+  if not is_normal_buf then return end
+
   local sign_group = "marks.nvim"
   vim.fn.sign_unplace(sign_group, { buffer = bufnr, })
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
