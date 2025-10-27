@@ -98,7 +98,13 @@ local function refresh_mark_signs(bufnr)
       end
       return 10
     end)()
-    vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, })
+    local ok, error = pcall(
+      vim.fn.sign_place,
+      id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, }
+    )
+    if not ok then
+       notify(vim.log.levels.ERROR, tostring(error)
+    end
 
     if letter:match "%a" then goto continue end
 
