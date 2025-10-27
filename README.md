@@ -1,6 +1,14 @@
 # `marks.nvim`
 
-A set of utilities to upgrade native vim marks.
+A set of utilities to improve your experience with vim marks.
+
+## Features
+- Renders a sign at the row of the mark in the sign column (`MarkRow`)
+    - The set of marks to render a sign for is configurable
+    - Updates automatically
+- Highlights the column of the mark (`MarkCol`)
+- Utilities to toggle the next available local, global mark, navigate between marks
+- 1 source file (~400 LOC), 1 test file
 
 ## Sample configuration
 
@@ -36,7 +44,7 @@ vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 - Remap `m` to refresh the sign column when setting a mark
 
 #### `vim.g.marks.highlight_char_set`
-- The set of mark characters to render in the sign column 
+- The set of mark characters to render a sign for in the sign column
 
 ## TODO
 - [ ] Testing

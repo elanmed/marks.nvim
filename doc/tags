@@ -1,4 +1,5 @@
 marks-configuration-options	marks.txt	/*marks-configuration-options*
+marks-features	marks.txt	/*marks-features*
 marks-marks.nvim	marks.txt	/*marks-marks.nvim*
 marks-sample-configuration	marks.txt	/*marks-sample-configuration*
 marks-similar-plugins	marks.txt	/*marks-similar-plugins*

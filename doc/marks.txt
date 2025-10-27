@@ -3,6 +3,7 @@
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
 
+Features .................................................... |marks-features|
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
@@ -15,8 +16,19 @@ Similar plugins ...................................... |marks-similar-plugins|
 `MARKS.NVIM`                                                *marks-marks.nvim*
 
 
-A set of utilities to upgrade native vim marks.
+A set of utilities to improve your experience with vim marks.
 
+
+------------------------------------------------------------------------------
+FEATURES                                                      *marks-features*
+
+
+- Renders a sign at the row of the mark in the sign column (`MarkRow`) - The
+  set of marks to render a sign for is configurable - Updates automatically
+- Highlights the column of the mark (`MarkCol`)
+- Utilities to toggle the next available local, global mark, navigate between
+  marks
+- 1 source file (~400 LOC), 1 test file
 
 ------------------------------------------------------------------------------
 SAMPLE CONFIGURATION                              *marks-sample-configuration*
@@ -63,7 +75,7 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
                                                                               
 `VIM.G.MARKS.HIGHLIGHT_CHAR_SET`        *marks-vim.g.marks.highlight_char_set*
 
-- The set of mark characters to render in the sign column
+- The set of mark characters to render a sign for in the sign column
 
 ------------------------------------------------------------------------------
 TODO                                                              *marks-todo*
