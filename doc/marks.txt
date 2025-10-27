@@ -88,7 +88,7 @@ SIMILAR PLUGINS                                        *marks-similar-plugins*
 
 
 - chentoast/marks.nvim <https://github.com/chentoast/marks.nvim> (sorry for
-  taking duplicate name 😅)
+  the duplicate name 😅)
 - vim-signature <https://github.com/kshenoy/vim-signature>
 - vim-bookmarks <https://github.com/MattesGroeger/vim-bookmarks>
 

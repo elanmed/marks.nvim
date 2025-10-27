@@ -50,6 +50,6 @@ vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 - [ ] Testing
 
 ## Similar plugins
-- [chentoast/marks.nvim](https://github.com/chentoast/marks.nvim) (sorry for taking duplicate name 😅)
+- [chentoast/marks.nvim](https://github.com/chentoast/marks.nvim) (sorry for the duplicate name 😅)
 - [vim-signature](https://github.com/kshenoy/vim-signature)
 - [vim-bookmarks](https://github.com/MattesGroeger/vim-bookmarks)
