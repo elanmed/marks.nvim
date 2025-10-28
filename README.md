@@ -61,7 +61,7 @@ vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 --- @param opts MarksNavigateBufferMarksOpts
 M.navigate_buffer_marks = function(opts)
 ```
-- Navigates to the next/prev mark in the buffer present in `opts.navigate_char_set`
+- Navigate to the next/prev mark in the buffer that matches `opts.navigate_char_set`
 - Cycles
 
 #### `navigate_global_marks`
@@ -71,7 +71,7 @@ M.navigate_buffer_marks = function(opts)
 --- @param opts MarksNavigateGlobalMarksOpts
 M.navigate_global_marks = function(opts)
 ```
-- Navigates to the next/prev global mark
+- Navigate to the next/prev global mark
 - Cycles
 
 #### `toggle_next_local_mark`
@@ -85,7 +85,7 @@ M.toggle_next_local_mark = function()
 ```lua
 M.toggle_next_global_mark = function()
 ```
-- If an global mark is set on the current line, delete it
+- If a global mark is set on the current line, delete it
 - Else, set the next available global mark
 
 #### `refresh_signs`
@@ -117,7 +117,7 @@ M.global_marks_to_qf_list = function()
 --- @param opts MarksSendBufferMarksToQfListOpts
 M.buffer_marks_to_qf_list = function(opts)
 ```
-- Send marks in the current buffer which match `opts.qf_list_char_set` to the quickfix list
+- Send marks in the buffer that match `opts.qf_list_char_set` to the quickfix list
 - Open the quickfix list
 
 ## TODO

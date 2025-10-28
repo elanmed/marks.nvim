@@ -1,4 +1,4 @@
-*marks.txt*                                       Last change: 2025 October 26
+*marks.txt*                                       Last change: 2025 October 27
 
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
@@ -110,7 +110,7 @@ API                                                                *marks-api*
     --- @param opts MarksNavigateBufferMarksOpts
     M.navigate_buffer_marks = function(opts)
 <
-- Navigates to the next/prev mark in the buffer present in
+- Navigate to the next/prev mark in the buffer that matches
   `opts.navigate_char_set`
 - Cycles
 
@@ -123,7 +123,7 @@ API                                                                *marks-api*
     --- @param opts MarksNavigateGlobalMarksOpts
     M.navigate_global_marks = function(opts)
 <
-- Navigates to the next/prev global mark
+- Navigate to the next/prev global mark
 - Cycles
 
                                                                               
@@ -141,7 +141,7 @@ API                                                                *marks-api*
 >lua
     M.toggle_next_global_mark = function()
 <
-- If an global mark is set on the current line, delete it
+- If a global mark is set on the current line, delete it
 - Else, set the next available global mark
 
                                                                               
@@ -181,8 +181,8 @@ API                                                                *marks-api*
     --- @param opts MarksSendBufferMarksToQfListOpts
     M.buffer_marks_to_qf_list = function(opts)
 <
-- Send marks in the current buffer which match `opts.qf_list_char_set` to the
-  quickfix list
+- Send marks in the buffer that match `opts.qf_list_char_set` to the quickfix
+  list
 - Open the quickfix list
 
 ------------------------------------------------------------------------------
