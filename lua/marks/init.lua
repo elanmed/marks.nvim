@@ -53,7 +53,7 @@ end
 --- @param mark_name string
 local function get_buffer_mark_pos(mark_name)
   local mark = vim.api.nvim_buf_get_mark(0, mark_name)
-  if mark[1] == 0 and mark[2] == 0 then
+  if mark[1] == 0 then
     return nil
   end
   return { row = mark[1], col = mark[2], }
@@ -98,13 +98,7 @@ local function refresh_mark_signs(bufnr)
       end
       return 10
     end)()
-    local ok, error = pcall(
-      vim.fn.sign_place,
-      id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, }
-    )
-    if not ok then
-      notify(vim.log.levels.ERROR, tostring(error))
-    end
+    vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, })
 
     if letter:match "%a" then goto continue end
 
