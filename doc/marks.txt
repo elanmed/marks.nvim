@@ -10,6 +10,15 @@ Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
 `vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
 `vim.g.marks.highlight_char_set` ...... |marks-vim.g.marks.highlight_char_set|
+Api .............................................................. |marks-api|
+`navigate_buffer_marks` ........................ |marks-navigate_buffer_marks|
+`navigate_global_marks` ........................ |marks-navigate_global_marks|
+`toggle_next_local_mark` ...................... |marks-toggle_next_local_mark|
+`toggle_next_global_mark` .................... |marks-toggle_next_global_mark|
+`refresh_signs` ........................................ |marks-refresh_signs|
+`delete_buffer_marks` ............................ |marks-delete_buffer_marks|
+`global_marks_to_qf_list` .................... |marks-global_marks_to_qf_list|
+`buffer_marks_to_qf_list` .................... |marks-buffer_marks_to_qf_list|
 TODO ............................................................ |marks-todo|
 Similar plugins ...................................... |marks-similar-plugins|
 
@@ -50,14 +59,16 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
       highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
     }
     
-    vim.keymap.set("n", "]a", function() marks.navigate_local_marks { direction = "next", } end)
-    vim.keymap.set("n", "[a", function() marks.navigate_local_marks { direction = "prev", } end)
+    vim.keymap.set("n", "]a", function() marks.navigate_buffer_marks { direction = "next", } end)
+    vim.keymap.set("n", "[a", function() marks.navigate_buffer_marks { direction = "prev", } end)
     vim.keymap.set("n", "]s", function() marks.navigate_global_marks { direction = "next", } end)
     vim.keymap.set("n", "[s", function() marks.navigate_global_marks { direction = "prev", } end)
     vim.keymap.set("n", "<leader>ml", marks.toggle_next_local_mark)
     vim.keymap.set("n", "<leader>mg", marks.toggle_next_global_mark)
     vim.keymap.set("n", "<leader>me", marks.refresh_signs)
     vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
+    vim.keymap.set("n", "<leader>mq", marks.send_global_marks_to_qf_list)
+    vim.keymap.set("n", "<leader>mf", marks.buffer_marks_to_qf_list)
     
     -- defaults
     vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
@@ -83,6 +94,96 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
 `VIM.G.MARKS.HIGHLIGHT_CHAR_SET`        *marks-vim.g.marks.highlight_char_set*
 
 - The set of mark characters to render a sign for in the sign column
+
+------------------------------------------------------------------------------
+API                                                                *marks-api*
+
+
+
+                                                                              
+`NAVIGATE_BUFFER_MARKS`                          *marks-navigate_buffer_marks*
+
+>lua
+    --- @class MarksNavigateBufferMarksOpts
+    --- @field direction "next"|"prev"
+    --- @field navigate_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
+    --- @param opts MarksNavigateBufferMarksOpts
+    M.navigate_buffer_marks = function(opts)
+<
+- Navigates to the next/prev mark in the buffer present in
+  `opts.navigate_char_set`
+- Cycles
+
+                                                                              
+`NAVIGATE_GLOBAL_MARKS`                          *marks-navigate_global_marks*
+
+>lua
+    --- @class MarksNavigateGlobalMarksOpts
+    --- @field direction "next"|"prev"
+    --- @param opts MarksNavigateGlobalMarksOpts
+    M.navigate_global_marks = function(opts)
+<
+- Navigates to the next/prev global mark
+- Cycles
+
+                                                                              
+`TOGGLE_NEXT_LOCAL_MARK`                        *marks-toggle_next_local_mark*
+
+>lua
+    M.toggle_next_local_mark = function()
+<
+- If a local mark is set on the current line, delete it
+- Else, set the next available local mark
+
+                                                                              
+`TOGGLE_NEXT_GLOBAL_MARK`                      *marks-toggle_next_global_mark*
+
+>lua
+    M.toggle_next_global_mark = function()
+<
+- If an global mark is set on the current line, delete it
+- Else, set the next available global mark
+
+                                                                              
+`REFRESH_SIGNS`                                          *marks-refresh_signs*
+
+>lua
+    M.refresh_signs = function()
+<
+- Manually refresh the sign column - This shouldn't be necessary, it's called
+  behind the scenes
+
+                                                                              
+`DELETE_BUFFER_MARKS`                              *marks-delete_buffer_marks*
+
+>lua
+    M.delete_buffer_marks = function()
+<
+- Delete all local and global marks in the buffer - To delete all local marks,
+  use `vim.cmd.delmarks "[a-z]"` - To delete all global marks, use
+  `vim.cmd.delmarks "[A-Z]"`
+
+                                                                              
+`GLOBAL_MARKS_TO_QF_LIST`                      *marks-global_marks_to_qf_list*
+
+>lua
+    M.global_marks_to_qf_list = function()
+<
+- Send all global marks to the quickfix list
+- Open the quickfix list
+
+                                                                              
+`BUFFER_MARKS_TO_QF_LIST`                      *marks-buffer_marks_to_qf_list*
+
+>lua
+    --- @class MarksSendBufferMarksToQfListOpts
+    --- @field qf_list_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
+    --- @param opts MarksSendBufferMarksToQfListOpts
+    M.buffer_marks_to_qf_list = function(opts)
+<
+- Send marks in the current buffer which match `opts.qf_list_char_set` to the
+  quickfix list
+- Open the quickfix list
 
 ------------------------------------------------------------------------------
 TODO                                                              *marks-todo*

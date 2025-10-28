@@ -24,14 +24,16 @@ vim.g.marks = {
   highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
 }
 
-vim.keymap.set("n", "]a", function() marks.navigate_local_marks { direction = "next", } end)
-vim.keymap.set("n", "[a", function() marks.navigate_local_marks { direction = "prev", } end)
+vim.keymap.set("n", "]a", function() marks.navigate_buffer_marks { direction = "next", } end)
+vim.keymap.set("n", "[a", function() marks.navigate_buffer_marks { direction = "prev", } end)
 vim.keymap.set("n", "]s", function() marks.navigate_global_marks { direction = "next", } end)
 vim.keymap.set("n", "[s", function() marks.navigate_global_marks { direction = "prev", } end)
 vim.keymap.set("n", "<leader>ml", marks.toggle_next_local_mark)
 vim.keymap.set("n", "<leader>mg", marks.toggle_next_global_mark)
 vim.keymap.set("n", "<leader>me", marks.refresh_signs)
 vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
+vim.keymap.set("n", "<leader>mq", marks.send_global_marks_to_qf_list)
+vim.keymap.set("n", "<leader>mf", marks.buffer_marks_to_qf_list)
 
 -- defaults
 vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
@@ -48,6 +50,75 @@ vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 
 #### `vim.g.marks.highlight_char_set`
 - The set of mark characters to render a sign for in the sign column
+
+## Api
+#### `navigate_buffer_marks`
+
+```lua
+--- @class MarksNavigateBufferMarksOpts
+--- @field direction "next"|"prev"
+--- @field navigate_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
+--- @param opts MarksNavigateBufferMarksOpts
+M.navigate_buffer_marks = function(opts)
+```
+- Navigates to the next/prev mark in the buffer present in `opts.navigate_char_set`
+- Cycles
+
+#### `navigate_global_marks`
+```lua
+--- @class MarksNavigateGlobalMarksOpts
+--- @field direction "next"|"prev"
+--- @param opts MarksNavigateGlobalMarksOpts
+M.navigate_global_marks = function(opts)
+```
+- Navigates to the next/prev global mark
+- Cycles
+
+#### `toggle_next_local_mark`
+```lua
+M.toggle_next_local_mark = function()
+```
+- If a local mark is set on the current line, delete it
+- Else, set the next available local mark
+
+#### `toggle_next_global_mark`
+```lua
+M.toggle_next_global_mark = function()
+```
+- If an global mark is set on the current line, delete it
+- Else, set the next available global mark
+
+#### `refresh_signs`
+```lua
+M.refresh_signs = function()
+```
+- Manually refresh the sign column
+    - This shouldn't be necessary, it's called behind the scenes
+
+#### `delete_buffer_marks`
+```lua
+M.delete_buffer_marks = function()
+```
+- Delete all local and global marks in the buffer
+    - To delete all local marks, use `vim.cmd.delmarks "[a-z]"`
+    - To delete all global marks, use `vim.cmd.delmarks "[A-Z]"`
+
+#### `global_marks_to_qf_list`
+```lua
+M.global_marks_to_qf_list = function()
+```
+- Send all global marks to the quickfix list
+- Open the quickfix list
+
+#### `buffer_marks_to_qf_list`
+```lua
+--- @class MarksSendBufferMarksToQfListOpts
+--- @field qf_list_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
+--- @param opts MarksSendBufferMarksToQfListOpts
+M.buffer_marks_to_qf_list = function(opts)
+```
+- Send marks in the current buffer which match `opts.qf_list_char_set` to the quickfix list
+- Open the quickfix list
 
 ## TODO
 - [ ] Testing

@@ -87,7 +87,7 @@ local function refresh_mark_signs(bufnr)
   vim.fn.sign_unplace(sign_group, { buffer = bufnr, })
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
-  for letter in (gopts().highlight_char_set):gmatch "." do
+  for letter in gopts().highlight_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos == nil then goto continue end
     local id = letter:byte() * 100
@@ -118,20 +118,20 @@ M.setup = function()
   vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
   vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
 
-  for letter in (opts.highlight_char_set):gmatch "." do
+  for letter in opts.highlight_char_set:gmatch "." do
     vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow", })
   end
 
   local events = {}
 
-  -- <> first/last character of the last selected area
-  if opts.highlight_char_set:match "[<>]" then
-    events["ModeChanged"] = true
-  end
-
   if opts.highlight_char_set:match "[%a]" then
     events["BufEnter"] = true
     events["BufWinEnter"] = true
+  end
+
+  -- <> first/last character of the last selected area
+  if opts.highlight_char_set:match "[<>]" then
+    events["ModeChanged"] = true
   end
 
   -- [] first/last character of the last changed or yanked text
@@ -302,11 +302,11 @@ M.navigate_global_marks = function(opts)
   vim.api.nvim_win_set_cursor(0, { next_mark_info.row, next_mark_info.col, })
 end
 
---- @class MarksNavigateLocalMarksOpts
+--- @class MarksNavigateBufferMarksOpts
 --- @field direction "next"|"prev"
 --- @field navigate_char_set? string
---- @param _opts MarksNavigateLocalMarksOpts
-M.navigate_local_marks = function(_opts)
+--- @param _opts MarksNavigateBufferMarksOpts
+M.navigate_buffer_marks = function(_opts)
   if vim.tbl_get(_opts, "direction") ~= "next" and vim.tbl_get(_opts, "direction") ~= "prev" then
     notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
     return
@@ -321,7 +321,7 @@ M.navigate_local_marks = function(_opts)
 
   --- @type {row: number, col: number}[]
   local mark_pos_list = {}
-  for letter in (opts.navigate_char_set):gmatch "." do
+  for letter in opts.navigate_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos ~= nil then
       table.insert(mark_pos_list, mark_pos)
@@ -370,6 +370,58 @@ M.delete_buffer_marks = function()
   end
 
   refresh_mark_signs(0)
+end
+
+--- @class MarksSendBufferMarksToQfListOpts
+--- @field qf_list_char_set? string
+--- @param _opts MarksSendBufferMarksToQfListOpts
+M.buffer_marks_to_qf_list = function(_opts)
+  _opts = _opts or {}
+  --- @type MarksSendBufferMarksToQfListOpts
+  local opts = {}
+  opts.qf_list_char_set = default(
+    vim.tbl_get(_opts, "qf_list_char_set"),
+    M.char_sets.local_marks .. M.char_sets.global_marks
+  )
+  local qf_list = {}
+  local filename = vim.api.nvim_buf_get_name(0)
+  for letter in opts.qf_list_char_set:gmatch "." do
+    local mark_pos = get_buffer_mark_pos(letter)
+    if mark_pos ~= nil then
+      local line = vim.trim(vim.api.nvim_buf_get_lines(0, mark_pos.row, mark_pos.row + 1, false)[1])
+      table.insert(qf_list, {
+        bufnr = 0,
+        text = ("%s|%s"):format(letter, line),
+        lnum = mark_pos.row,
+        col = mark_pos.col,
+        filename = filename,
+      })
+    end
+  end
+  vim.fn.setqflist(qf_list)
+  vim.cmd.copen()
+end
+
+M.global_marks_to_qf_list = function()
+  local qf_list = {}
+  for letter in M.char_sets.global_marks:gmatch "." do
+    local mark_info = get_global_mark_info(letter)
+
+    if mark_info ~= nil then
+      local lines = vim.fn.readfile(vim.fs.normalize(mark_info.bufname), tostring(mark_info.row))
+      local line = vim.list_slice(lines, mark_info.row, mark_info.row)[1]
+      line = vim.trim(line)
+
+      table.insert(qf_list, {
+        text = ("%s|%s"):format(letter, line),
+        lnum = mark_info.row,
+        col = mark_info.col,
+        filename = mark_info.bufname,
+      })
+    end
+  end
+  vim.fn.setqflist(qf_list)
+  vim.cmd.copen()
 end
 
 return M
