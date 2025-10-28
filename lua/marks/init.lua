@@ -415,7 +415,7 @@ M.global_marks_to_qf_list = function()
         text = ("%s|%s"):format(letter, line),
         lnum = mark_info.row,
         col = mark_info.col,
-        filename = mark_info.bufname,
+        filename = vim.fs.normalize(mark_info.bufname),
       })
     end
   end
