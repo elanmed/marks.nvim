@@ -23,6 +23,13 @@ local default = function(val, default_val)
   return val
 end
 
+--- @param tbl table
+--- @param ... any
+local tbl_get = function(tbl, ...)
+  if tbl == nil then return nil end
+  return vim.tbl_get(tbl, ...)
+end
+
 --- @class MarksOpts
 --- @field notify? boolean
 --- @field remap_m? boolean
@@ -31,10 +38,10 @@ end
 local gopts = function()
   --- @type MarksOpts
   local opts = {}
-  opts.notify = default(vim.tbl_get(vim.g.marks, "notify"), true)
-  opts.remap_m = default(vim.tbl_get(vim.g.marks, "remap_m"), true)
+  opts.notify = default(tbl_get(vim.g.marks, "notify"), true)
+  opts.remap_m = default(tbl_get(vim.g.marks, "remap_m"), true)
   opts.highlight_char_set = default(
-    vim.tbl_get(vim.g.marks, "highlight_char_set"),
+    tbl_get(vim.g.marks, "highlight_char_set"),
     M.char_sets.global_marks .. M.char_sets.local_marks
   )
   return opts
@@ -257,7 +264,7 @@ end
 --- @field direction "next"|"prev"
 --- @param opts MarksNavigateGlobalMarksOpts
 M.navigate_global_marks = function(opts)
-  if vim.tbl_get(opts, "direction") ~= "next" and vim.tbl_get(opts, "direction") ~= "prev" then
+  if tbl_get(opts, "direction") ~= "next" and tbl_get(opts, "direction") ~= "prev" then
     notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
     return
   end
@@ -307,14 +314,14 @@ end
 --- @field navigate_char_set? string
 --- @param _opts MarksNavigateBufferMarksOpts
 M.navigate_buffer_marks = function(_opts)
-  if vim.tbl_get(_opts, "direction") ~= "next" and vim.tbl_get(_opts, "direction") ~= "prev" then
+  if tbl_get(_opts, "direction") ~= "next" and tbl_get(_opts, "direction") ~= "prev" then
     notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
     return
   end
 
   local opts = {}
   opts.navigate_char_set = default(
-    vim.tbl_get(_opts, "navigate_char_set"),
+    tbl_get(_opts, "navigate_char_set"),
     M.char_sets.local_marks .. M.char_sets.global_marks
   )
   opts.direction = _opts.direction
@@ -376,11 +383,10 @@ end
 --- @field qf_list_char_set? string
 --- @param _opts MarksSendBufferMarksToQfListOpts
 M.buffer_marks_to_qf_list = function(_opts)
-  _opts = _opts or {}
   --- @type MarksSendBufferMarksToQfListOpts
   local opts = {}
   opts.qf_list_char_set = default(
-    vim.tbl_get(_opts, "qf_list_char_set"),
+    tbl_get(_opts, "qf_list_char_set"),
     M.char_sets.local_marks .. M.char_sets.global_marks
   )
   local qf_list = {}
