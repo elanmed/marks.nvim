@@ -384,7 +384,6 @@ M.buffer_marks_to_qf_list = function(_opts)
     M.char_sets.local_marks .. M.char_sets.global_marks
   )
   local qf_list = {}
-  local filename = vim.api.nvim_buf_get_name(0)
   for letter in opts.qf_list_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos ~= nil then
@@ -394,7 +393,7 @@ M.buffer_marks_to_qf_list = function(_opts)
         text = ("%s|%s"):format(letter, line),
         lnum = mark_pos.row,
         col = mark_pos.col,
-        filename = filename,
+        filename = vim.fs.normalize(vim.api.nvim_buf_get_name(0)),
       })
     end
   end
