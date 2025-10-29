@@ -6,6 +6,22 @@ local dummy_file_a = vim.fs.joinpath(dummy_dir, "dummy_file_a.txt")
 local dummy_file_b = vim.fs.joinpath(dummy_dir, "dummy_file_b.txt")
 local dummy_file_c = vim.fs.joinpath(dummy_dir, "dummy_file_c.txt")
 
+local expect_cursor = MiniTest.new_expectation(
+  "cursor set",
+  --- @param row number
+  --- @param col number
+  function(row, col)
+    local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
+    return cursor[1] == row and cursor[2] == col
+  end,
+  --- @param row number
+  --- @param col number
+  function(row, col)
+    local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
+    return ("Expected cursor to be at %s, %s, was at %s, %s"):format(row, col, cursor[1], cursor[2])
+  end
+)
+
 --- @param row number
 --- @param col number
 local function get_hl_names(row, col)
@@ -208,6 +224,60 @@ T["toggle_next_global_mark"]["add the next available global mark in a group of f
   child.lua [[M.toggle_next_global_mark()]]
   expect_sign { letter = "B", set = true, }
   expect_global_mark { letter = "B", set = true, row = 2, col = 1, basename = "dummy_file_b.txt", }
+end
+
+T["navigate_buffer_marks"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[M.toggle_next_local_mark()]]
+      child.type_keys "jl"
+      child.lua [[M.toggle_next_local_mark()]]
+      child.type_keys "jl"
+      child.lua [[M.toggle_next_global_mark()]]
+      child.type_keys "gg0"
+    end,
+  },
+}
+
+T["navigate_buffer_marks"]["navigates to the next, prev marks in the buffer"] = function()
+  expect_cursor(1, 0)
+
+  child.lua [[M.navigate_buffer_marks { direction = "next" }]]
+  expect_cursor(2, 1)
+
+  child.lua [[M.navigate_buffer_marks { direction = "next" }]]
+  expect_cursor(3, 2)
+
+  child.lua [[M.navigate_buffer_marks { direction = "next" }]]
+  expect_cursor(1, 0)
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
+  expect_cursor(3, 2)
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
+  expect_cursor(2, 1)
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
+  expect_cursor(1, 0)
+end
+T["navigate_buffer_marks"]["respects opts.navigate_char_set"] = function()
+  expect_cursor(1, 0)
+
+  child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor(2, 1)
+
+  child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor(1, 0)
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor(2, 1)
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor(1, 0)
+end
+
+T["navigate_global_marks"] = MiniTest.new_set()
+T["navigate_global_marks"]["navigates to the next, prev global marks"] = function()
 end
 
 return T
