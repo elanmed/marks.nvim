@@ -8,17 +8,30 @@ local dummy_file_c = vim.fs.joinpath(dummy_dir, "dummy_file_c.txt")
 
 local expect_cursor = MiniTest.new_expectation(
   "cursor set",
-  --- @param row number
-  --- @param col number
-  function(row, col)
+  --- @class ExpectCursorOpts
+  --- @field row number
+  --- @field col number
+  --- @field basename? string
+  --- @param opts ExpectCursorOpts
+  function(opts)
+    local bufname = child.api.nvim_buf_get_name(child.api.nvim_get_current_buf())
     local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
-    return cursor[1] == row and cursor[2] == col
+    if opts.basename then
+      return cursor[1] == opts.row and cursor[2] == opts.col and opts.basename == vim.fs.basename(bufname)
+    else
+      return cursor[1] == opts.row and cursor[2] == opts.col
+    end
   end,
-  --- @param row number
-  --- @param col number
-  function(row, col)
+  --- @param opts ExpectCursorOpts
+  function(opts)
+    local bufname = child.api.nvim_buf_get_name(child.api.nvim_get_current_buf())
     local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
-    return ("Expected cursor to be at %s, %s, was at %s, %s"):format(row, col, cursor[1], cursor[2])
+    if opts.basename then
+      return ("Expected cursor to be at %s, %s at bufname %s, was at %s, %s at bufname %s"):format(opts.row, opts.col,
+        opts.basename, cursor[1], cursor[2], vim.fs.basename(bufname))
+    else
+      return ("Expected cursor to be at %s, %s, was at %s, %s"):format(opts.row, opts.col, cursor[1], cursor[2])
+    end
   end
 )
 
@@ -240,44 +253,79 @@ T["navigate_buffer_marks"] = MiniTest.new_set {
 }
 
 T["navigate_buffer_marks"]["navigates to the next, prev marks in the buffer"] = function()
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor(2, 1)
+  expect_cursor { row = 2, col = 1, }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor(3, 2)
+  expect_cursor { row = 3, col = 2, }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor(3, 2)
+  expect_cursor { row = 3, col = 2, }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor(2, 1)
+  expect_cursor { row = 2, col = 1, }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 end
 T["navigate_buffer_marks"]["respects opts.navigate_char_set"] = function()
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 
   child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor(2, 1)
+  expect_cursor { row = 2, col = 1, }
 
   child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor(2, 1)
+  expect_cursor { row = 2, col = 1, }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor(1, 0)
+  expect_cursor { row = 1, col = 0, }
 end
 
-T["navigate_global_marks"] = MiniTest.new_set()
+T["navigate_global_marks"] = MiniTest.new_set {
+  hooks = {
+    pre_case = function()
+      child.lua [[M.toggle_next_global_mark()]]
+
+      child.cmd("edit " .. dummy_file_b)
+      child.type_keys "jl"
+      child.lua [[M.toggle_next_global_mark()]]
+
+      child.cmd("edit " .. dummy_file_c)
+      child.type_keys "jjll"
+      child.lua [[M.toggle_next_global_mark()]]
+
+      child.cmd("edit " .. dummy_file_a)
+    end,
+  },
+}
 T["navigate_global_marks"]["navigates to the next, prev global marks"] = function()
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "next" }]]
+  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "next" }]]
+  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "next" }]]
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "prev" }]]
+  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "prev" }]]
+  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt", }
+
+  child.lua [[M.navigate_global_marks { direction = "prev" }]]
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
 end
 
 return T
