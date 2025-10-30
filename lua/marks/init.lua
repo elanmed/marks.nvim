@@ -122,8 +122,8 @@ M.setup = function()
   vim.g.marks_setup_called = true
   local opts = gopts()
 
-  vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
-  vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
+  vim.api.nvim_set_hl(0, "MarkCol", { default = true, link = "Search", })
+  vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 
   for letter in opts.highlight_char_set:gmatch "." do
     vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow", })
