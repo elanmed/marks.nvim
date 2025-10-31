@@ -6,6 +6,32 @@ local dummy_file_a = vim.fs.joinpath(dummy_dir, "dummy_file_a.txt")
 local dummy_file_b = vim.fs.joinpath(dummy_dir, "dummy_file_b.txt")
 local dummy_file_c = vim.fs.joinpath(dummy_dir, "dummy_file_c.txt")
 
+local expect_qf_list = MiniTest.new_expectation(
+  "qf list equal",
+  function(expected, received)
+    local mapped = vim.tbl_map(function(entry)
+      return {
+        text = entry.text,
+        lnum = entry.lnum,
+        col = entry.col,
+        filename = entry.filename,
+      }
+    end, received)
+    return vim.deep_equal(mapped, expected)
+  end,
+  function(expected, received)
+    local mapped = vim.tbl_map(function(entry)
+      return {
+        text = entry.text,
+        lnum = entry.lnum,
+        col = entry.col,
+        filename = entry.filename,
+      }
+    end, received)
+    return ("Expected %s, received %s"):format(vim.inspect(expected), vim.inspect(mapped))
+  end
+)
+
 local expect_cursor = MiniTest.new_expectation(
   "cursor set",
   --- @class ExpectCursorOpts
@@ -161,7 +187,6 @@ local T = MiniTest.new_set {
       child.restart { "-u", "scripts/minimal_init.lua", }
       child.cmd "set signcolumn=yes"
       child.lua [[M = require('marks')]]
-      child.lua [[M.setup()]]
       child.cmd("edit " .. dummy_file_a)
     end,
     post_case = function()
@@ -171,7 +196,9 @@ local T = MiniTest.new_set {
   },
 }
 
-T["toggle_next_local_mark"] = MiniTest.new_set()
+T["toggle_next_local_mark"] = MiniTest.new_set {
+  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+}
 T["toggle_next_local_mark"]["toggle a mark when called on a single line"] = function()
   expect_sign { letter = "a", set = false, }
   expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
@@ -199,7 +226,9 @@ T["toggle_next_local_mark"]["add the next available mark"] = function()
   expect_buffer_mark { letter = "b", set = true, row = 2, col = 1, }
 end
 
-T["toggle_next_global_mark"] = MiniTest.new_set()
+T["toggle_next_global_mark"] = MiniTest.new_set {
+  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+}
 T["toggle_next_global_mark"]["toggle a mark when called on a single line"] = function()
   expect_sign { letter = "A", set = false, }
   expect_global_mark { letter = "A", set = false, row = 1, col = 0, basename = "dummy_file_a.txt", }
@@ -242,6 +271,8 @@ end
 T["navigate_buffer_marks"] = MiniTest.new_set {
   hooks = {
     pre_case = function()
+      child.lua [[M.setup()]]
+
       child.lua [[M.toggle_next_local_mark()]]
       child.type_keys "jl"
       child.lua [[M.toggle_next_local_mark()]]
@@ -292,6 +323,8 @@ end
 T["navigate_global_marks"] = MiniTest.new_set {
   hooks = {
     pre_case = function()
+      child.lua [[M.setup()]]
+
       child.lua [[M.toggle_next_global_mark()]]
 
       child.cmd("edit " .. dummy_file_b)
@@ -329,6 +362,8 @@ T["navigate_global_marks"]["navigates to the next, prev global marks"] = functio
 end
 
 T["delete_buffer_marks"] = function()
+  child.lua [[M.setup()]]
+
   child.lua [[M.toggle_next_local_mark()]]
   child.type_keys "j"
   child.lua [[M.toggle_next_local_mark()]]
@@ -349,6 +384,97 @@ T["delete_buffer_marks"] = function()
   expect_buffer_mark { letter = "b", set = false, row = 2, col = 0, }
   expect_sign { letter = "A", set = false, }
   expect_buffer_mark { letter = "A", set = false, row = 3, col = 0, }
+end
+
+T["setup"] = MiniTest.new_set()
+T["setup"]["remap_m"] = MiniTest.new_set()
+T["setup"]["remap_m"]["should default to true"] = function()
+  child.lua [[M.setup()]]
+
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  child.type_keys "ma"
+  expect_sign { letter = "a", set = true, }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+end
+T["setup"]["remap_m"]["should respect false"] = function()
+  child.g.marks = { remap_m = false, }
+  child.lua [[M.setup()]]
+
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  child.type_keys "ma"
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+end
+
+T["setup"]["highlight_char_set"] = function()
+  child.g.marks = { highlight_char_set = "b", }
+  child.lua [[M.setup()]]
+
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  child.type_keys "ma"
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+
+  child.type_keys "j"
+
+  expect_sign { letter = "b", set = false, }
+  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0, }
+  child.type_keys "mb"
+  expect_sign { letter = "b", set = true, }
+  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0, }
+
+  child.type_keys "j"
+
+  expect_sign { letter = "c", set = false, }
+  expect_buffer_mark { letter = "c", set = false, row = 2, col = 0, }
+  child.type_keys "mc"
+  expect_sign { letter = "c", set = false, }
+  expect_buffer_mark { letter = "c", set = true, row = 3, col = 0, }
+end
+
+T["buffer_marks_to_qf_list"] = function()
+  child.lua [[M.setup()]]
+
+  child.type_keys "ma"
+  child.type_keys "jl"
+  child.type_keys "mb"
+  child.type_keys "jl"
+  child.type_keys "mA"
+
+  child.lua [[M.buffer_marks_to_qf_list()]]
+  local qf_list = child.fn.getqflist()
+  expect_qf_list(
+    {
+      { col = 0, lnum = 1, text = "a|alpha", },
+      { col = 1, lnum = 2, text = "b|bravo", },
+      { col = 2, lnum = 3, text = "A|charlie", },
+    },
+    qf_list)
+end
+
+T["global_marks_to_qf_list"] = function()
+  child.lua [[M.setup()]]
+
+  child.type_keys "mA"
+  child.cmd("edit " .. dummy_file_b)
+  child.type_keys "jl"
+  child.type_keys "mB"
+  child.cmd("edit " .. dummy_file_c)
+  child.type_keys "jjll"
+  child.type_keys "mC"
+
+  child.lua [[M.global_marks_to_qf_list()]]
+  local qf_list = child.fn.getqflist()
+  expect_qf_list(
+    {
+      { col = 0, lnum = 1, text = "A|alpha", },
+      { col = 1, lnum = 2, text = "B|echo", },
+      { col = 2, lnum = 3, text = "C|india", },
+    },
+    qf_list)
 end
 
 return T

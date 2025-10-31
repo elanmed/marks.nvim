@@ -1,3 +1,4 @@
+vim.g.marks = { skip_setup = true, }
 -- https://github.com/echasnovski/mini.nvim/blob/main/TESTING.md#file-organization
 vim.cmd [[let &rtp.=','.getcwd()]]
 

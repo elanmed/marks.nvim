@@ -393,7 +393,8 @@ M.buffer_marks_to_qf_list = function(_opts)
   for letter in opts.qf_list_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos ~= nil then
-      local line = vim.trim(vim.api.nvim_buf_get_lines(0, mark_pos.row, mark_pos.row + 1, false)[1])
+      local row_zero_indexed = mark_pos.row - 1
+      local line = vim.trim(vim.api.nvim_buf_get_lines(0, row_zero_indexed, row_zero_indexed + 1, false)[1])
       table.insert(qf_list, {
         bufnr = 0,
         text = ("%s|%s"):format(letter, line),
