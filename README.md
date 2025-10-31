@@ -2,9 +2,6 @@
 
 A set of utilities to improve your experience with vim marks.
 
-## Status
-- In progress, some bugs, not tested
-
 ## Features
 - Renders a sign at the row of the mark in the sign column (`MarkRow`)
     - The set of marks to render a sign for is configurable
@@ -36,8 +33,8 @@ vim.keymap.set("n", "<leader>mq", marks.send_global_marks_to_qf_list)
 vim.keymap.set("n", "<leader>mf", marks.buffer_marks_to_qf_list)
 
 -- defaults
-vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
-vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
+vim.api.nvim_set_hl(0, "MarkCol", { default = true, link = "Search", })
+vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 ```
 
 ## Configuration options
@@ -119,9 +116,6 @@ M.buffer_marks_to_qf_list = function(opts)
 ```
 - Send marks in the buffer that match `opts.qf_list_char_set` to the quickfix list
 - Open the quickfix list
-
-## TODO
-- [ ] Testing
 
 ## Similar plugins
 - [chentoast/marks.nvim](https://github.com/chentoast/marks.nvim) (sorry for the duplicate name 😅)

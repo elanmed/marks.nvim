@@ -10,9 +10,7 @@ marks-navigate_global_marks	marks.txt	/*marks-navigate_global_marks*
 marks-refresh_signs	marks.txt	/*marks-refresh_signs*
 marks-sample-configuration	marks.txt	/*marks-sample-configuration*
 marks-similar-plugins	marks.txt	/*marks-similar-plugins*
-marks-status	marks.txt	/*marks-status*
 marks-table-of-contents	marks.txt	/*marks-table-of-contents*
-marks-todo	marks.txt	/*marks-todo*
 marks-toggle_next_global_mark	marks.txt	/*marks-toggle_next_global_mark*
 marks-toggle_next_local_mark	marks.txt	/*marks-toggle_next_local_mark*
 marks-vim.g.marks.highlight_char_set	marks.txt	/*marks-vim.g.marks.highlight_char_set*

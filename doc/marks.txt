@@ -3,7 +3,6 @@
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
 
-Status ........................................................ |marks-status|
 Features .................................................... |marks-features|
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
@@ -19,7 +18,6 @@ Api .............................................................. |marks-api|
 `delete_buffer_marks` ............................ |marks-delete_buffer_marks|
 `global_marks_to_qf_list` .................... |marks-global_marks_to_qf_list|
 `buffer_marks_to_qf_list` .................... |marks-buffer_marks_to_qf_list|
-TODO ............................................................ |marks-todo|
 Similar plugins ...................................... |marks-similar-plugins|
 
 ==============================================================================
@@ -28,12 +26,6 @@ Similar plugins ...................................... |marks-similar-plugins|
 
 A set of utilities to improve your experience with vim marks.
 
-
-------------------------------------------------------------------------------
-STATUS                                                          *marks-status*
-
-
-- In progress, some bugs, not tested
 
 ------------------------------------------------------------------------------
 FEATURES                                                      *marks-features*
@@ -71,8 +63,8 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
     vim.keymap.set("n", "<leader>mf", marks.buffer_marks_to_qf_list)
     
     -- defaults
-    vim.api.nvim_set_hl(0, "MarkCol", { link = "Search", })
-    vim.api.nvim_set_hl(0, "MarkRow", { link = "Search", })
+    vim.api.nvim_set_hl(0, "MarkCol", { default = true, link = "Search", })
+    vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 <
 
 ------------------------------------------------------------------------------
@@ -184,12 +176,6 @@ API                                                                *marks-api*
 - Send marks in the buffer that match `opts.qf_list_char_set` to the quickfix
   list
 - Open the quickfix list
-
-------------------------------------------------------------------------------
-TODO                                                              *marks-todo*
-
-
-- [ ] Testing
 
 ------------------------------------------------------------------------------
 SIMILAR PLUGINS                                        *marks-similar-plugins*
