@@ -328,4 +328,27 @@ T["navigate_global_marks"]["navigates to the next, prev global marks"] = functio
   expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
 end
 
+T["delete_buffer_marks"] = function()
+  child.lua [[M.toggle_next_local_mark()]]
+  child.type_keys "j"
+  child.lua [[M.toggle_next_local_mark()]]
+  child.type_keys "j"
+  child.lua [[M.toggle_next_global_mark()]]
+
+  expect_sign { letter = "a", set = true, }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+  expect_sign { letter = "b", set = true, }
+  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0, }
+  expect_sign { letter = "A", set = true, }
+  expect_buffer_mark { letter = "A", set = true, row = 3, col = 0, }
+
+  child.lua [[M.delete_buffer_marks()]]
+  expect_sign { letter = "a", set = false, }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  expect_sign { letter = "b", set = false, }
+  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0, }
+  expect_sign { letter = "A", set = false, }
+  expect_buffer_mark { letter = "A", set = false, row = 3, col = 0, }
+end
+
 return T
