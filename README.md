@@ -2,14 +2,6 @@
 
 A set of utilities to improve your experience with vim marks.
 
-## Features
-- Renders a sign at the row of the mark in the sign column (`MarkRow`)
-    - The set of marks to render a sign for is configurable
-    - Updates automatically
-- Highlights the column of the mark (`MarkCol`)
-- Utilities to toggle the next available local, global mark, navigate between marks
-- 1 source file (~400 LOC), 1 test file
-
 ## Sample configuration
 
 ```lua 

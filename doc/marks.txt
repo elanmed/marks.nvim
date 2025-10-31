@@ -1,9 +1,8 @@
-*marks.txt*                                       Last change: 2025 October 27
+*marks.txt*                                       Last change: 2025 October 30
 
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
 
-Features .................................................... |marks-features|
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
@@ -26,17 +25,6 @@ Similar plugins ...................................... |marks-similar-plugins|
 
 A set of utilities to improve your experience with vim marks.
 
-
-------------------------------------------------------------------------------
-FEATURES                                                      *marks-features*
-
-
-- Renders a sign at the row of the mark in the sign column (`MarkRow`) - The
-  set of marks to render a sign for is configurable - Updates automatically
-- Highlights the column of the mark (`MarkCol`)
-- Utilities to toggle the next available local, global mark, navigate between
-  marks
-- 1 source file (~400 LOC), 1 test file
 
 ------------------------------------------------------------------------------
 SAMPLE CONFIGURATION                              *marks-sample-configuration*

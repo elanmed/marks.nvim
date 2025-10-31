@@ -2,7 +2,6 @@ marks-api	marks.txt	/*marks-api*
 marks-buffer_marks_to_qf_list	marks.txt	/*marks-buffer_marks_to_qf_list*
 marks-configuration-options	marks.txt	/*marks-configuration-options*
 marks-delete_buffer_marks	marks.txt	/*marks-delete_buffer_marks*
-marks-features	marks.txt	/*marks-features*
 marks-global_marks_to_qf_list	marks.txt	/*marks-global_marks_to_qf_list*
 marks-marks.nvim	marks.txt	/*marks-marks.nvim*
 marks-navigate_buffer_marks	marks.txt	/*marks-navigate_buffer_marks*
