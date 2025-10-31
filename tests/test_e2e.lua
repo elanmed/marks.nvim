@@ -61,40 +61,6 @@ local expect_cursor = MiniTest.new_expectation(
   end
 )
 
---- @param row number
---- @param col number
-local function get_hl_names(row, col)
-  local ns = child.api.nvim_create_namespace "marks.nvim"
-  local ext_marks = child.api.nvim_buf_get_extmarks(child.api.nvim_get_current_buf(), ns, { row - 1, col, },
-    { row - 1, col, }, { details = true, })
-  return vim.tbl_map(function(mark) return mark[4].hl_group end, ext_marks)
-end
-
-local expect_hl = MiniTest.new_expectation(
-  "hls set",
-  --- @class ExpectHlOpts
-  --- @field row number
-  --- @field col number
-  --- @field set boolean
-  --- @param opts ExpectHlOpts
-  function(opts)
-    local hl_names = get_hl_names(opts.row, opts.col)
-    if opts.set then
-      return hl_names[1] == "MarkCol"
-    else
-      return vim.tbl_count(hl_names) == 0
-    end
-  end,
-  --- @param opts ExpectHlOpts
-  function(opts)
-    if opts.set then
-      return ("Expected hl to be set at row %s, col %s, was not"):format(opts.row, opts.col)
-    else
-      return ("Expected hl not to be set at row %s, col %s, was"):format(opts.row, opts.col)
-    end
-  end
-)
-
 local expect_buffer_mark = MiniTest.new_expectation(
   "mark set",
   --- @class ExpectBufferMarkOpts
