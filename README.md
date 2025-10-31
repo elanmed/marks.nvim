@@ -2,6 +2,8 @@
 
 A set of utilities to improve your experience with vim marks.
 
+![demo](https://elanmed.dev/nvim-plugins/marks.png)
+
 ## Sample configuration
 
 ```lua 
