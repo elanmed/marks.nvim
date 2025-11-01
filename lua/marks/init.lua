@@ -101,9 +101,9 @@ local function refresh_mark_signs(bufnr)
 
     local priority = (function()
       if letter:match "%a" then
-        return 20
+        return 2
       end
-      return 10
+      return 1
     end)()
     vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, })
 
