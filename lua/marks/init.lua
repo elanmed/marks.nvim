@@ -86,9 +86,9 @@ local function refresh_mark_signs(bufnr)
   local bufname = vim.api.nvim_buf_get_name(bufnr)
   if bufname == "" then return end
 
-  local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr, })
-  local is_normal_buf = buftype == ""
-  if not is_normal_buf then return end
+  -- local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr, })
+  -- local is_normal_buf = buftype == ""
+  -- if not is_normal_buf then return end
 
   local sign_group = "marks.nvim"
   vim.fn.sign_unplace(sign_group, { buffer = bufnr, })
@@ -258,6 +258,22 @@ M.toggle_next_local_mark = function()
       return
     end
   end
+end
+
+M.get_next_avail_local_mark = function()
+  for letter in M.char_sets.local_marks:gmatch "." do
+    local mark_pos = get_buffer_mark_pos(letter)
+    if mark_pos == nil then return letter end
+  end
+  return nil
+end
+
+M.get_next_avail_global_mark = function()
+  for letter in M.char_sets.global_marks:gmatch "." do
+    local global_mark_info = get_global_mark_info(letter)
+    if global_mark_info == nil then return letter end
+  end
+  return nil
 end
 
 --- @class MarksNavigateGlobalMarksOpts

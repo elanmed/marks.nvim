@@ -162,6 +162,18 @@ local T = MiniTest.new_set {
   },
 }
 
+T["get_next_avail_local_mark"] = function()
+  child.lua [[M.setup()]]
+
+  MiniTest.expect.equality("a", child.lua_get [[M.get_next_avail_local_mark()]])
+
+  child.lua [[M.toggle_next_local_mark()]]
+  expect_sign { letter = "a", set = true, }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+
+  MiniTest.expect.equality("b", child.lua_get [[M.get_next_avail_local_mark()]])
+end
+
 T["toggle_next_local_mark"] = MiniTest.new_set {
   hooks = { pre_case = function() child.lua [[M.setup()]] end, },
 }
@@ -190,6 +202,18 @@ T["toggle_next_local_mark"]["add the next available mark"] = function()
   child.lua [[M.toggle_next_local_mark()]]
   expect_sign { letter = "b", set = true, }
   expect_buffer_mark { letter = "b", set = true, row = 2, col = 1, }
+end
+
+T["get_next_avail_global_mark"] = function()
+  child.lua [[M.setup()]]
+  MiniTest.expect.equality("A", child.lua_get [[M.get_next_avail_global_mark()]])
+
+  child.lua [[M.toggle_next_global_mark()]]
+
+  expect_sign { letter = "A", set = true, }
+  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt", }
+
+  MiniTest.expect.equality("B", child.lua_get [[M.get_next_avail_global_mark()]])
 end
 
 T["toggle_next_global_mark"] = MiniTest.new_set {

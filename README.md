@@ -6,7 +6,7 @@ A set of utilities to improve your experience with vim marks.
 
 ## Sample configuration
 
-```lua 
+```lua
 local marks = require "marks"
 vim.g.marks = {
   -- defaults:
@@ -34,15 +34,19 @@ vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 ## Configuration options
 
 #### `vim.g.marks.notify`
+
 - Call `vim.notify` with info related to the `marks.*` function called
 
 #### `vim.g.marks.remap_m`
+
 - Remap `m` to refresh the sign column when setting a mark
 
 #### `vim.g.marks.highlight_char_set`
+
 - The set of mark characters to render a sign for in the sign column
 
 ## Api
+
 #### `navigate_buffer_marks`
 
 ```lua
@@ -52,66 +56,98 @@ vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 --- @param opts MarksNavigateBufferMarksOpts
 M.navigate_buffer_marks = function(opts)
 ```
+
 - Navigate to the next/prev mark in the buffer that matches `opts.navigate_char_set`
 - Cycles
 
 #### `navigate_global_marks`
+
 ```lua
 --- @class MarksNavigateGlobalMarksOpts
 --- @field direction "next"|"prev"
 --- @param opts MarksNavigateGlobalMarksOpts
 M.navigate_global_marks = function(opts)
 ```
+
 - Navigate to the next/prev global mark
 - Cycles
 
 #### `toggle_next_local_mark`
+
 ```lua
 M.toggle_next_local_mark = function()
 ```
+
 - If a local mark is set on the current line, delete it
 - Else, set the next available local mark
 
+#### `get_next_avail_local_mark`
+
+```lua
+M.get_next_avail_local_mark = function()
+```
+
+- Get the letter of the next available local mark
+
 #### `toggle_next_global_mark`
+
 ```lua
 M.toggle_next_global_mark = function()
 ```
+
 - If a global mark is set on the current line, delete it
 - Else, set the next available global mark
 
+#### `get_next_avail_global_mark`
+
+```lua
+M.get_next_avail_global_mark = function()
+```
+
+- Get the letter of the next available global mark
+
 #### `refresh_signs`
+
 ```lua
 M.refresh_signs = function()
 ```
+
 - Manually refresh the sign column
-    - This shouldn't be necessary, it's called behind the scenes
+  - This shouldn't be necessary, it's called behind the scenes
 
 #### `delete_buffer_marks`
+
 ```lua
 M.delete_buffer_marks = function()
 ```
+
 - Delete all local and global marks in the buffer
-    - To delete all local marks, use `vim.cmd.delmarks "[a-z]"`
-    - To delete all global marks, use `vim.cmd.delmarks "[A-Z]"`
+  - To delete all local marks, use `vim.cmd.delmarks "[a-z]"`
+  - To delete all global marks, use `vim.cmd.delmarks "[A-Z]"`
 
 #### `global_marks_to_qf_list`
+
 ```lua
 M.global_marks_to_qf_list = function()
 ```
+
 - Send all global marks to the quickfix list
 - Open the quickfix list
 
 #### `buffer_marks_to_qf_list`
+
 ```lua
 --- @class MarksSendBufferMarksToQfListOpts
 --- @field qf_list_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
 --- @param opts MarksSendBufferMarksToQfListOpts
 M.buffer_marks_to_qf_list = function(opts)
 ```
+
 - Send marks in the buffer that match `opts.qf_list_char_set` to the quickfix list
 - Open the quickfix list
 
 ## Similar plugins
+
 - [chentoast/marks.nvim](https://github.com/chentoast/marks.nvim) (sorry for the duplicate name 😅)
 - [vim-signature](https://github.com/kshenoy/vim-signature)
 - [vim-bookmarks](https://github.com/MattesGroeger/vim-bookmarks)

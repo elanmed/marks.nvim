@@ -12,7 +12,9 @@ Api .............................................................. |marks-api|
 `navigate_buffer_marks` ........................ |marks-navigate_buffer_marks|
 `navigate_global_marks` ........................ |marks-navigate_global_marks|
 `toggle_next_local_mark` ...................... |marks-toggle_next_local_mark|
+`get_next_avail_local_mark` ................ |marks-get_next_avail_local_mark|
 `toggle_next_global_mark` .................... |marks-toggle_next_global_mark|
+`get_next_avail_global_mark` .............. |marks-get_next_avail_global_mark|
 `refresh_signs` ........................................ |marks-refresh_signs|
 `delete_buffer_marks` ............................ |marks-delete_buffer_marks|
 `global_marks_to_qf_list` .................... |marks-global_marks_to_qf_list|
@@ -118,6 +120,14 @@ API                                                                *marks-api*
 - Else, set the next available local mark
 
                                                                               
+`GET_NEXT_AVAIL_LOCAL_MARK`                  *marks-get_next_avail_local_mark*
+
+>lua
+    M.get_next_avail_local_mark = function()
+<
+- Get the letter of the next available local mark
+
+                                                                              
 `TOGGLE_NEXT_GLOBAL_MARK`                      *marks-toggle_next_global_mark*
 
 >lua
@@ -125,6 +135,14 @@ API                                                                *marks-api*
 <
 - If a global mark is set on the current line, delete it
 - Else, set the next available global mark
+
+                                                                              
+`GET_NEXT_AVAIL_GLOBAL_MARK`                *marks-get_next_avail_global_mark*
+
+>lua
+    M.get_next_avail_global_mark = function()
+<
+- Get the letter of the next available global mark
 
                                                                               
 `REFRESH_SIGNS`                                          *marks-refresh_signs*
