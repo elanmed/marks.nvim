@@ -83,8 +83,8 @@ local function refresh_mark_signs(bufnr)
 
   if not vim.api.nvim_buf_is_valid(bufnr) then return end
 
-  local bufname = vim.api.nvim_buf_get_name(bufnr)
-  if bufname == "" then return end
+  -- local bufname = vim.api.nvim_buf_get_name(bufnr)
+  -- if bufname == "" then return end
 
   -- local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr, })
   -- local is_normal_buf = buftype == ""
