@@ -66,13 +66,23 @@ local function get_buffer_mark_pos(mark_name)
   return { row = mark[1], col = mark[2], }
 end
 
+--- @class GlobalMarkInfo
+--- @field in_cwd boolean
+--- @field row number
+--- @field col number
+--- @field bufnr number
+--- @field bufname string
+
 --- @param mark_name string
 local function get_global_mark_info(mark_name)
   local mark = vim.api.nvim_get_mark(mark_name, {})
   if mark[1] == 0 and mark[2] == 0 and mark[3] == 0 and mark[4] == "" then
     return nil
   end
-  return { row = mark[1], col = mark[2], bufnr = mark[3], bufname = mark[4], }
+  local bufname = vim.fs.normalize(mark[4])
+  local in_cwd = vim.startswith(bufname, vim.fn.getcwd())
+  --- @type GlobalMarkInfo
+  return { in_cwd = in_cwd, row = mark[1], col = mark[2], bufnr = mark[3], bufname = bufname, }
 end
 
 --- @param bufnr number
@@ -228,7 +238,8 @@ end
 M.toggle_next_global_mark = function()
   for letter in M.char_sets.global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
-    if not global_mark_info then
+
+    if global_mark_info == nil then
       set_mark(letter)
       return
     end
@@ -292,35 +303,35 @@ M.navigate_global_marks = function(opts)
     return M.char_sets.global_marks:reverse()
   end)()
 
-  --- @type string[]
-  local global_marks_list = {}
+  --- @type GlobalMarkInfo[]
+  local global_marks_info_list = {}
   for global_mark in global_marks_str:gmatch "." do
-    if get_global_mark_info(global_mark) then
-      table.insert(global_marks_list, global_mark)
+    local global_mark_info = get_global_mark_info(global_mark)
+
+    if global_mark_info ~= nil and global_mark_info.in_cwd then
+      table.insert(global_marks_info_list, global_mark_info)
     end
   end
 
   local curr_buf = vim.api.nvim_get_current_buf()
   local curr_idx = 1
-  for idx, global_mark in ipairs(global_marks_list) do
-    local mark_info = assert(get_global_mark_info(global_mark))
-    if curr_buf == mark_info.bufnr then
+  for idx, global_mark_info in ipairs(global_marks_info_list) do
+    if curr_buf == global_mark_info.bufnr then
       curr_idx = idx
     end
   end
 
-  if #global_marks_list == 0 then
+  if #global_marks_info_list == 0 then
     notify(vim.log.levels.INFO, "No global marks")
     return
   end
-  if #global_marks_list == 1 then return end
+  if #global_marks_info_list == 1 then return end
 
   local next_idx = curr_idx + 1
-  if next_idx > #global_marks_list then
+  if next_idx > #global_marks_info_list then
     next_idx = 1
   end
-  local next_mark = global_marks_list[next_idx]
-  local next_mark_info = assert(get_global_mark_info(next_mark))
+  local next_mark_info = global_marks_info_list[next_idx]
   vim.cmd.edit(next_mark_info.bufname)
   vim.api.nvim_win_set_cursor(0, { next_mark_info.row, next_mark_info.col, })
 end
@@ -427,21 +438,24 @@ end
 M.global_marks_to_qf_list = function()
   local qf_list = {}
   for letter in M.char_sets.global_marks:gmatch "." do
-    local mark_info = get_global_mark_info(letter)
+    local global_mark_info = get_global_mark_info(letter)
+    if global_mark_info == nil then goto continue end
+    if not global_mark_info.in_cwd then goto continue end
 
-    if mark_info ~= nil then
-      local lines = vim.fn.readfile(vim.fs.normalize(mark_info.bufname), tostring(mark_info.row))
-      local line = vim.list_slice(lines, mark_info.row, mark_info.row)[1]
-      line = vim.trim(line)
+    local lines = vim.fn.readfile(vim.fs.normalize(global_mark_info.bufname), tostring(global_mark_info.row))
+    local line = vim.list_slice(lines, global_mark_info.row, global_mark_info.row)[1]
+    line = vim.trim(line)
 
-      table.insert(qf_list, {
-        text = ("%s|%s"):format(letter, line),
-        lnum = mark_info.row,
-        col = mark_info.col,
-        filename = vim.fs.normalize(mark_info.bufname),
-      })
-    end
+    table.insert(qf_list, {
+      text = ("%s|%s"):format(letter, line),
+      lnum = global_mark_info.row,
+      col = global_mark_info.col,
+      filename = vim.fs.normalize(global_mark_info.bufname),
+    })
+
+    ::continue::
   end
+
   vim.fn.setqflist(qf_list)
   vim.cmd.copen()
 end
