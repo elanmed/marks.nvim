@@ -362,6 +362,11 @@ M.navigate_buffer_marks = function(_opts)
     end
   end
 
+  if #mark_pos_list == 0 then
+    notify(vim.log.levels.INFO, "No buffer marks")
+    return
+  end
+
   table.sort(mark_pos_list, function(a, b)
     if opts.direction == "next" then
       return b.row > a.row
