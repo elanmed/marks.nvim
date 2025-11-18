@@ -292,7 +292,7 @@ end
 --- @param opts MarksNavigateGlobalMarksOpts
 M.navigate_global_marks = function(opts)
   if tbl_get(opts, "direction") ~= "next" and tbl_get(opts, "direction") ~= "prev" then
-    notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
+    notify(vim.log.levels.ERROR, "`navigate_global_marks.opts.direction` must be `next` or `prev`")
     return
   end
 
@@ -342,7 +342,7 @@ end
 --- @param _opts MarksNavigateBufferMarksOpts
 M.navigate_buffer_marks = function(_opts)
   if tbl_get(_opts, "direction") ~= "next" and tbl_get(_opts, "direction") ~= "prev" then
-    notify(vim.log.levels.ERROR, "`navigate_local_marks.opts.direction` must be `next` or `prev`")
+    notify(vim.log.levels.ERROR, "`navigate_buffer_marks.opts.direction` must be `next` or `prev`")
     return
   end
 
