@@ -23,7 +23,7 @@ vim.keymap.set("n", "<leader>ml", marks.toggle_next_local_mark)
 vim.keymap.set("n", "<leader>mg", marks.toggle_next_global_mark)
 vim.keymap.set("n", "<leader>me", marks.refresh_signs)
 vim.keymap.set("n", "<leader>md", marks.delete_buffer_marks)
-vim.keymap.set("n", "<leader>mq", marks.send_global_marks_to_qf_list)
+vim.keymap.set("n", "<leader>mq", marks.global_marks_to_qf_list)
 vim.keymap.set("n", "<leader>mf", marks.buffer_marks_to_qf_list)
 
 -- defaults
@@ -137,9 +137,9 @@ M.global_marks_to_qf_list = function()
 #### `buffer_marks_to_qf_list`
 
 ```lua
---- @class MarksSendBufferMarksToQfListOpts
+--- @class MarksBufferMarksToQfListOpts
 --- @field qf_list_char_set? string defaults to `marks.char_sets.local_marks .. marks.char_sets.global_marks`
---- @param opts MarksSendBufferMarksToQfListOpts
+--- @param opts MarksBufferMarksToQfListOpts
 M.buffer_marks_to_qf_list = function(opts)
 ```
 

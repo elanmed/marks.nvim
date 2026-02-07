@@ -411,11 +411,11 @@ M.delete_buffer_marks = function()
   refresh_mark_signs(0)
 end
 
---- @class MarksSendBufferMarksToQfListOpts
+--- @class MarksBufferMarksToQfListOpts
 --- @field qf_list_char_set? string
---- @param _opts MarksSendBufferMarksToQfListOpts
+--- @param _opts MarksBufferMarksToQfListOpts
 M.buffer_marks_to_qf_list = function(_opts)
-  --- @type MarksSendBufferMarksToQfListOpts
+  --- @type MarksBufferMarksToQfListOpts
   local opts = {}
   opts.qf_list_char_set = default(
     tbl_get(_opts, "qf_list_char_set"),
