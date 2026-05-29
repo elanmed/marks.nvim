@@ -254,6 +254,7 @@ M.toggle_next_global_mark = function()
       return
     end
   end
+  notify(vim.log.levels.WARN, "No available global marks")
 end
 
 M.toggle_next_local_mark = function()
@@ -269,6 +270,7 @@ M.toggle_next_local_mark = function()
       return
     end
   end
+  notify(vim.log.levels.WARN, "No available local marks")
 end
 
 M.get_next_avail_local_mark = function()
