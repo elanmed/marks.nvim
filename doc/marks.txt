@@ -1,4 +1,4 @@
-*marks.txt*                                      Last change: 2025 November 09
+*marks.txt*                                      Last change: 2026 February 07
 
 ==============================================================================
 Table of Contents                                    *marks-table-of-contents*
@@ -6,7 +6,6 @@ Table of Contents                                    *marks-table-of-contents*
 Sample configuration ............................ |marks-sample-configuration|
 Configuration options .......................... |marks-configuration-options|
 `vim.g.marks.notify` .............................. |marks-vim.g.marks.notify|
-`vim.g.marks.remap_m` ............................ |marks-vim.g.marks.remap_m|
 `vim.g.marks.highlight_char_set` ...... |marks-vim.g.marks.highlight_char_set|
 Api .............................................................. |marks-api|
 `navigate_buffer_marks` ........................ |marks-navigate_buffer_marks|
@@ -39,7 +38,6 @@ SAMPLE CONFIGURATION                              *marks-sample-configuration*
     vim.g.marks = {
       -- defaults:
       notify = true,
-      remap_m = true,
       highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
     }
     
@@ -68,11 +66,6 @@ CONFIGURATION OPTIONS                            *marks-configuration-options*
 `VIM.G.MARKS.NOTIFY`                                *marks-vim.g.marks.notify*
 
 - Call `vim.notify` with info related to the `marks.*` function called
-
-                                                                              
-`VIM.G.MARKS.REMAP_M`                              *marks-vim.g.marks.remap_m*
-
-- Remap `m` to refresh the sign column when setting a mark
 
                                                                               
 `VIM.G.MARKS.HIGHLIGHT_CHAR_SET`        *marks-vim.g.marks.highlight_char_set*

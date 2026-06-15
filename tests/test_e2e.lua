@@ -377,27 +377,6 @@ T["delete_buffer_marks"] = function()
 end
 
 T["setup"] = MiniTest.new_set()
-T["setup"]["remap_m"] = MiniTest.new_set()
-T["setup"]["remap_m"]["should default to true"] = function()
-  child.lua [[M.setup()]]
-
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
-  child.type_keys "ma"
-  expect_sign { letter = "a", set = true, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
-end
-T["setup"]["remap_m"]["should respect false"] = function()
-  child.g.marks = { remap_m = false, }
-  child.lua [[M.setup()]]
-
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
-  child.type_keys "ma"
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
-end
-
 T["setup"]["highlight_char_set"] = function()
   child.g.marks = { highlight_char_set = "b", }
   child.lua [[M.setup()]]

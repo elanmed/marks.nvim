@@ -32,14 +32,12 @@ end
 
 --- @class MarksOpts
 --- @field notify? boolean
---- @field remap_m? boolean
 --- @field highlight_char_set? string
 
 local gopts = function()
   --- @type MarksOpts
   local opts = {}
   opts.notify = default(tbl_get(vim.g.marks, "notify"), true)
-  opts.remap_m = default(tbl_get(vim.g.marks, "remap_m"), true)
   opts.highlight_char_set = default(
     tbl_get(vim.g.marks, "highlight_char_set"),
     M.char_sets.global_marks .. M.char_sets.local_marks
@@ -139,7 +137,9 @@ M.setup = function()
     vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow", })
   end
 
-  local events = {}
+  local events = {
+    MarkSet = true,
+  }
 
   if opts.highlight_char_set:match "[%a]" then
     events["BufEnter"] = true
@@ -201,37 +201,24 @@ M.setup = function()
     table.insert(event_list, event)
   end
 
-  if vim.tbl_count(events) > 0 then
-    vim.api.nvim_create_autocmd(event_list, {
-      callback = function(args) refresh_mark_signs(args.buf) end,
-      desc = "Refresh the mark signs",
-    })
-  end
-
-  if opts.remap_m then
-    vim.keymap.set({ "n", "v", "x", }, "m", function()
-      local char = vim.fn.getcharstr()
-      vim.schedule(function() refresh_mark_signs(0) end)
-      return "m" .. char
-    end, { nowait = true, expr = true, desc = "m", })
-  end
+  vim.api.nvim_create_autocmd(event_list, {
+    callback = function(args) refresh_mark_signs(args.buf) end,
+    desc = "Refresh the mark signs",
+  })
 end
 
 local function set_mark(letter)
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
   vim.api.nvim_buf_set_mark(0, letter, cursor_pos[1], cursor_pos[2], {})
-  refresh_mark_signs(0)
   notify(vim.log.levels.INFO, "Set mark %s to line %s", letter, vim.fn.line ".")
 end
 
 local function del_mark(letter)
   vim.api.nvim_buf_del_mark(0, letter)
-  refresh_mark_signs(0)
   notify(vim.log.levels.INFO, "Deleting mark %s", letter)
 end
 
 M.refresh_signs = function()
-  refresh_mark_signs(0)
   notify(vim.log.levels.INFO, "Refreshing marks")
 end
 
@@ -404,13 +391,12 @@ M.delete_buffer_marks = function()
       deleted = true
     end
   end
+
   if deleted then
     notify(vim.log.levels.INFO, "Deleted marks")
   else
     notify(vim.log.levels.WARN, "No marks in the buffer")
   end
-
-  refresh_mark_signs(0)
 end
 
 --- @class MarksBufferMarksToQfListOpts

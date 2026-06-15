@@ -11,7 +11,6 @@ local marks = require "marks"
 vim.g.marks = {
   -- defaults:
   notify = true,
-  remap_m = true,
   highlight_char_set = marks.char_sets.local_marks .. marks.char_sets.global_marks,
 }
 
@@ -36,10 +35,6 @@ vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
 #### `vim.g.marks.notify`
 
 - Call `vim.notify` with info related to the `marks.*` function called
-
-#### `vim.g.marks.remap_m`
-
-- Remap `m` to refresh the sign column when setting a mark
 
 #### `vim.g.marks.highlight_char_set`
 
