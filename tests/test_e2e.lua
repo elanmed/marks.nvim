@@ -1,4 +1,3 @@
-require "mini.test".setup()
 local child = MiniTest.new_child_neovim()
 
 local dummy_dir = "dummy_dir"
