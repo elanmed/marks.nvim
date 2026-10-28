@@ -4,6 +4,8 @@ local dummy_dir = "dummy_dir"
 local dummy_file_a = vim.fs.joinpath(dummy_dir, "dummy_file_a.txt")
 local dummy_file_b = vim.fs.joinpath(dummy_dir, "dummy_file_b.txt")
 local dummy_file_c = vim.fs.joinpath(dummy_dir, "dummy_file_c.txt")
+local dummy_sibling_dir = "dummy_dir_sibling"
+local dummy_file_sibling = vim.fs.joinpath(dummy_sibling_dir, "dummy_file_sibling.txt")
 
 local expect_qf_list = MiniTest.new_expectation(
   "qf list equal",
@@ -145,9 +147,11 @@ local T = MiniTest.new_set {
   hooks = {
     pre_case = function()
       vim.fn.mkdir(dummy_dir)
+      vim.fn.mkdir(dummy_sibling_dir)
       vim.fn.writefile({ "alpha", "bravo", "charlie", }, dummy_file_a)
       vim.fn.writefile({ "delta", "echo", "foxtrot", }, dummy_file_b)
       vim.fn.writefile({ "golf", "hotel", "india", }, dummy_file_c)
+      vim.fn.writefile({ "sibling", }, dummy_file_sibling)
 
       child.restart { "-u", "scripts/minimal_init.lua", }
       child.cmd "set signcolumn=yes"
@@ -156,6 +160,7 @@ local T = MiniTest.new_set {
     end,
     post_case = function()
       vim.fn.delete(dummy_dir, "rf")
+      vim.fn.delete(dummy_sibling_dir, "rf")
     end,
     post_once = child.stop,
   },
@@ -403,7 +408,79 @@ T["setup"]["highlight_char_set"] = function()
   expect_buffer_mark { letter = "c", set = true, row = 3, col = 0, }
 end
 
-T["buffer_marks_to_qf_list"] = function()
+T["refresh_signs"] = MiniTest.new_set {
+  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+}
+T["refresh_signs"]["restores signs for existing marks"] = function()
+  child.api.nvim_buf_set_mark(0, "a", 1, 0, {})
+  child.fn.sign_unplace("marks.nvim", { buffer = 0, })
+
+  child.lua [[M.refresh_signs()]]
+
+  expect_sign { letter = "a", set = true, }
+end
+
+T["navigation edge cases"] = MiniTest.new_set {
+  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+}
+T["navigation edge cases"]["leaves the cursor unchanged when there are no buffer marks"] = function()
+  expect_cursor { row = 1, col = 0, }
+
+  child.lua [[M.navigate_buffer_marks { direction = "next", }]]
+
+  expect_cursor { row = 1, col = 0, }
+end
+T["navigation edge cases"]["leaves the cursor unchanged when there are no global marks"] = function()
+  expect_cursor { row = 1, col = 0, }
+
+  child.lua [[M.navigate_global_marks { direction = "next", }]]
+
+  expect_cursor { row = 1, col = 0, }
+end
+
+T["buffer_marks_to_qf_list"] = MiniTest.new_set()
+T["buffer_marks_to_qf_list"]["returns an empty list when there are no buffer marks"] = function()
+  child.lua [[M.buffer_marks_to_qf_list()]]
+
+  expect_qf_list({}, child.fn.getqflist())
+end
+
+T["global_marks_to_qf_list"] = MiniTest.new_set()
+T["global_marks_to_qf_list"]["excludes sibling paths outside the current directory"] = function()
+  child.lua [[M.setup()]]
+  child.cmd "delmarks A-Z"
+  child.cmd("cd " .. dummy_dir)
+  child.cmd("edit ../" .. dummy_file_sibling)
+  child.type_keys "mA"
+
+  child.lua [[M.global_marks_to_qf_list()]]
+
+  expect_qf_list({}, child.fn.getqflist())
+end
+T["global_marks_to_qf_list"]["skips marks beyond the end of a file"] = function()
+  child.lua [[M.setup()]]
+  child.cmd "delmarks A-Z"
+  child.api.nvim_win_set_cursor(0, { 3, 0, })
+  child.type_keys "mA"
+  vim.fn.writefile({ "short", }, dummy_file_a)
+
+  child.lua [[M.global_marks_to_qf_list()]]
+
+  expect_qf_list({}, child.fn.getqflist())
+end
+T["global_marks_to_qf_list"]["skips marks for deleted files"] = function()
+  child.lua [[M.setup()]]
+  child.cmd "delmarks A-Z"
+  child.api.nvim_win_set_cursor(0, { 1, 0, })
+  child.type_keys "mA"
+  vim.fn.delete(dummy_file_a)
+
+  child.lua [[M.global_marks_to_qf_list()]]
+
+  expect_qf_list({}, child.fn.getqflist())
+end
+
+T["buffer_marks_to_qf_list"]["lists buffer marks"] = function()
   child.lua [[M.setup()]]
 
   child.type_keys "ma"
@@ -423,7 +500,7 @@ T["buffer_marks_to_qf_list"] = function()
     qf_list)
 end
 
-T["global_marks_to_qf_list"] = function()
+T["global_marks_to_qf_list"]["lists global marks"] = function()
   child.lua [[M.setup()]]
 
   child.type_keys "mA"

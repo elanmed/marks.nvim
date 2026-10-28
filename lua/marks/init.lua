@@ -78,7 +78,7 @@ local function get_global_mark_info(mark_name)
     return nil
   end
   local bufname = vim.fs.normalize(mark[4])
-  local in_cwd = vim.startswith(bufname, vim.fn.getcwd())
+  local in_cwd = vim.fs.relpath(vim.fn.getcwd(), bufname) ~= nil
   --- @type GlobalMarkInfo
   return { in_cwd = in_cwd, row = mark[1], col = mark[2], bufnr = mark[3], bufname = bufname, }
 end
@@ -219,6 +219,7 @@ local function del_mark(letter)
 end
 
 M.refresh_signs = function()
+  refresh_mark_signs(0)
   notify(vim.log.levels.INFO, "Refreshing marks")
 end
 
@@ -435,8 +436,14 @@ M.global_marks_to_qf_list = function()
     if global_mark_info == nil then goto continue end
     if not global_mark_info.in_cwd then goto continue end
 
-    local lines = vim.fn.readfile(vim.fs.normalize(global_mark_info.bufname), tostring(global_mark_info.row))
+    local ok, lines = pcall(
+      vim.fn.readfile,
+      vim.fs.normalize(global_mark_info.bufname),
+      tostring(global_mark_info.row)
+    )
+    if not ok then goto continue end
     local line = vim.list_slice(lines, global_mark_info.row, global_mark_info.row)[1]
+    if line == nil then goto continue end
     line = vim.trim(line)
 
     table.insert(qf_list, {
