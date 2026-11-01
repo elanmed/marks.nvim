@@ -7,31 +7,27 @@ local dummy_file_c = vim.fs.joinpath(dummy_dir, "dummy_file_c.txt")
 local dummy_sibling_dir = "dummy_dir_sibling"
 local dummy_file_sibling = vim.fs.joinpath(dummy_sibling_dir, "dummy_file_sibling.txt")
 
-local expect_qf_list = MiniTest.new_expectation(
-  "qf list equal",
-  function(expected, received)
-    local mapped = vim.tbl_map(function(entry)
-      return {
-        text = entry.text,
-        lnum = entry.lnum,
-        col = entry.col,
-        filename = entry.filename,
-      }
-    end, received)
-    return vim.deep_equal(mapped, expected)
-  end,
-  function(expected, received)
-    local mapped = vim.tbl_map(function(entry)
-      return {
-        text = entry.text,
-        lnum = entry.lnum,
-        col = entry.col,
-        filename = entry.filename,
-      }
-    end, received)
-    return ("Expected %s, received %s"):format(vim.inspect(expected), vim.inspect(mapped))
-  end
-)
+local expect_qf_list = MiniTest.new_expectation("qf list equal", function(expected, received)
+  local mapped = vim.tbl_map(function(entry)
+    return {
+      text = entry.text,
+      lnum = entry.lnum,
+      col = entry.col,
+      filename = entry.filename,
+    }
+  end, received)
+  return vim.deep_equal(mapped, expected)
+end, function(expected, received)
+  local mapped = vim.tbl_map(function(entry)
+    return {
+      text = entry.text,
+      lnum = entry.lnum,
+      col = entry.col,
+      filename = entry.filename,
+    }
+  end, received)
+  return ("Expected %s, received %s"):format(vim.inspect(expected), vim.inspect(mapped))
+end)
 
 local expect_cursor = MiniTest.new_expectation(
   "cursor set",
@@ -44,7 +40,9 @@ local expect_cursor = MiniTest.new_expectation(
     local bufname = child.api.nvim_buf_get_name(child.api.nvim_get_current_buf())
     local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
     if opts.basename then
-      return cursor[1] == opts.row and cursor[2] == opts.col and opts.basename == vim.fs.basename(bufname)
+      return cursor[1] == opts.row
+        and cursor[2] == opts.col
+        and opts.basename == vim.fs.basename(bufname)
     else
       return cursor[1] == opts.row and cursor[2] == opts.col
     end
@@ -54,10 +52,21 @@ local expect_cursor = MiniTest.new_expectation(
     local bufname = child.api.nvim_buf_get_name(child.api.nvim_get_current_buf())
     local cursor = child.api.nvim_win_get_cursor(child.api.nvim_get_current_win())
     if opts.basename then
-      return ("Expected cursor to be at %s, %s at bufname %s, was at %s, %s at bufname %s"):format(opts.row, opts.col,
-        opts.basename, cursor[1], cursor[2], vim.fs.basename(bufname))
+      return ("Expected cursor to be at %s, %s at bufname %s, was at %s, %s at bufname %s"):format(
+        opts.row,
+        opts.col,
+        opts.basename,
+        cursor[1],
+        cursor[2],
+        vim.fs.basename(bufname)
+      )
     else
-      return ("Expected cursor to be at %s, %s, was at %s, %s"):format(opts.row, opts.col, cursor[1], cursor[2])
+      return ("Expected cursor to be at %s, %s, was at %s, %s"):format(
+        opts.row,
+        opts.col,
+        cursor[1],
+        cursor[2]
+      )
     end
   end
 )
@@ -100,7 +109,9 @@ local expect_global_mark = MiniTest.new_expectation(
   function(opts)
     local mark = child.api.nvim_get_mark(opts.letter, {})
     if opts.set then
-      return mark[1] == opts.row and mark[2] == opts.col and vim.fs.basename(mark[4]) == opts.basename
+      return mark[1] == opts.row
+        and mark[2] == opts.col
+        and vim.fs.basename(mark[4]) == opts.basename
     else
       return mark[1] == 0 and mark[2] == 0 and mark[3] == 0 and mark[4] == ""
     end
@@ -122,15 +133,16 @@ local expect_sign = MiniTest.new_expectation(
   --- @field set boolean
   --- @param opts ExpectSignOpts
   function(opts)
-    local signs = child.fn.sign_getplaced(child.api.nvim_get_current_buf(), { group = "marks.nvim", })[1].signs
+    local signs =
+      child.fn.sign_getplaced(child.api.nvim_get_current_buf(), { group = "marks.nvim" })[1].signs
     if opts.set then
       return vim.tbl_contains(signs, function(sign)
         return sign.name == opts.letter
-      end, { predicate = true, })
+      end, { predicate = true })
     else
       return not vim.tbl_contains(signs, function(sign)
         return sign.name == opts.letter
-      end, { predicate = true, })
+      end, { predicate = true })
     end
   end,
   --- @param opts ExpectSignOpts
@@ -148,12 +160,12 @@ local T = MiniTest.new_set {
     pre_case = function()
       vim.fn.mkdir(dummy_dir)
       vim.fn.mkdir(dummy_sibling_dir)
-      vim.fn.writefile({ "alpha", "bravo", "charlie", }, dummy_file_a)
-      vim.fn.writefile({ "delta", "echo", "foxtrot", }, dummy_file_b)
-      vim.fn.writefile({ "golf", "hotel", "india", }, dummy_file_c)
-      vim.fn.writefile({ "sibling", }, dummy_file_sibling)
+      vim.fn.writefile({ "alpha", "bravo", "charlie" }, dummy_file_a)
+      vim.fn.writefile({ "delta", "echo", "foxtrot" }, dummy_file_b)
+      vim.fn.writefile({ "golf", "hotel", "india" }, dummy_file_c)
+      vim.fn.writefile({ "sibling" }, dummy_file_sibling)
 
-      child.restart { "-u", "scripts/minimal_init.lua", }
+      child.restart { "-u", "scripts/minimal_init.lua" }
       child.cmd "set signcolumn=yes"
       child.lua [[M = require('marks')]]
       child.cmd("edit " .. dummy_file_a)
@@ -172,40 +184,44 @@ T["get_next_avail_local_mark"] = function()
   MiniTest.expect.equality("a", child.lua_get [[M.get_next_avail_local_mark()]])
 
   child.lua [[M.toggle_next_local_mark()]]
-  expect_sign { letter = "a", set = true, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+  expect_sign { letter = "a", set = true }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0 }
 
   MiniTest.expect.equality("b", child.lua_get [[M.get_next_avail_local_mark()]])
 end
 
 T["toggle_next_local_mark"] = MiniTest.new_set {
-  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+  hooks = {
+    pre_case = function()
+      child.lua [[M.setup()]]
+    end,
+  },
 }
 T["toggle_next_local_mark"]["toggle a mark when called on a single line"] = function()
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  expect_sign { letter = "a", set = false }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0 }
 
   child.lua [[M.toggle_next_local_mark()]]
 
-  expect_sign { letter = "a", set = true, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+  expect_sign { letter = "a", set = true }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0 }
 
   child.lua [[M.toggle_next_local_mark()]]
 
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  expect_sign { letter = "a", set = false }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0 }
 end
 T["toggle_next_local_mark"]["add the next available mark"] = function()
   child.lua [[M.toggle_next_local_mark()]]
-  expect_sign { letter = "a", set = true, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+  expect_sign { letter = "a", set = true }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0 }
 
-  expect_sign { letter = "b", set = false, }
-  expect_buffer_mark { letter = "b", set = false, row = 2, col = 1, }
+  expect_sign { letter = "b", set = false }
+  expect_buffer_mark { letter = "b", set = false, row = 2, col = 1 }
   child.type_keys "jl"
   child.lua [[M.toggle_next_local_mark()]]
-  expect_sign { letter = "b", set = true, }
-  expect_buffer_mark { letter = "b", set = true, row = 2, col = 1, }
+  expect_sign { letter = "b", set = true }
+  expect_buffer_mark { letter = "b", set = true, row = 2, col = 1 }
 end
 
 T["get_next_avail_global_mark"] = function()
@@ -214,52 +230,56 @@ T["get_next_avail_global_mark"] = function()
 
   child.lua [[M.toggle_next_global_mark()]]
 
-  expect_sign { letter = "A", set = true, }
-  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = true }
+  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   MiniTest.expect.equality("B", child.lua_get [[M.get_next_avail_global_mark()]])
 end
 
 T["toggle_next_global_mark"] = MiniTest.new_set {
-  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+  hooks = {
+    pre_case = function()
+      child.lua [[M.setup()]]
+    end,
+  },
 }
 T["toggle_next_global_mark"]["toggle a mark when called on a single line"] = function()
-  expect_sign { letter = "A", set = false, }
-  expect_global_mark { letter = "A", set = false, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = false }
+  expect_global_mark { letter = "A", set = false, row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.lua [[M.toggle_next_global_mark()]]
 
-  expect_sign { letter = "A", set = true, }
-  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = true }
+  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.lua [[M.toggle_next_global_mark()]]
 
-  expect_sign { letter = "A", set = false, }
-  expect_global_mark { letter = "A", set = false, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = false }
+  expect_global_mark { letter = "A", set = false, row = 1, col = 0, basename = "dummy_file_a.txt" }
 end
 T["toggle_next_global_mark"]["replace the current global mark in a single file"] = function()
   child.lua [[M.toggle_next_global_mark()]]
-  expect_sign { letter = "A", set = true, }
-  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = true }
+  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.type_keys "jl"
   child.lua [[M.toggle_next_global_mark()]]
-  expect_sign { letter = "A", set = true, }
-  expect_global_mark { letter = "A", set = true, row = 2, col = 1, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = true }
+  expect_global_mark { letter = "A", set = true, row = 2, col = 1, basename = "dummy_file_a.txt" }
 end
 T["toggle_next_global_mark"]["add the next available global mark in a group of files"] = function()
   child.lua [[M.toggle_next_global_mark()]]
-  expect_sign { letter = "A", set = true, }
-  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_sign { letter = "A", set = true }
+  expect_global_mark { letter = "A", set = true, row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.cmd("edit " .. dummy_file_b)
 
-  expect_sign { letter = "B", set = false, }
-  expect_global_mark { letter = "B", set = false, row = 2, col = 1, basename = "dummy_file_b.txt", }
+  expect_sign { letter = "B", set = false }
+  expect_global_mark { letter = "B", set = false, row = 2, col = 1, basename = "dummy_file_b.txt" }
   child.type_keys "jl"
   child.lua [[M.toggle_next_global_mark()]]
-  expect_sign { letter = "B", set = true, }
-  expect_global_mark { letter = "B", set = true, row = 2, col = 1, basename = "dummy_file_b.txt", }
+  expect_sign { letter = "B", set = true }
+  expect_global_mark { letter = "B", set = true, row = 2, col = 1, basename = "dummy_file_b.txt" }
 end
 
 T["navigate_buffer_marks"] = MiniTest.new_set {
@@ -278,40 +298,40 @@ T["navigate_buffer_marks"] = MiniTest.new_set {
 }
 
 T["navigate_buffer_marks"]["navigates to the next, prev marks in the buffer"] = function()
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor { row = 2, col = 1, }
+  expect_cursor { row = 2, col = 1 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor { row = 3, col = 2, }
+  expect_cursor { row = 3, col = 2 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next" }]]
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor { row = 3, col = 2, }
+  expect_cursor { row = 3, col = 2 }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor { row = 2, col = 1, }
+  expect_cursor { row = 2, col = 1 }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 end
 T["navigate_buffer_marks"]["respects opts.navigate_char_set"] = function()
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor { row = 2, col = 1, }
+  expect_cursor { row = 2, col = 1 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor { row = 2, col = 1, }
+  expect_cursor { row = 2, col = 1 }
 
   child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 end
 
 T["navigate_global_marks"] = MiniTest.new_set {
@@ -334,25 +354,25 @@ T["navigate_global_marks"] = MiniTest.new_set {
   },
 }
 T["navigate_global_marks"]["navigates to the next, prev global marks"] = function()
-  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "next" }]]
-  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt", }
+  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "next" }]]
-  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt", }
+  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "next" }]]
-  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "prev" }]]
-  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt", }
+  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "prev" }]]
-  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt", }
+  expect_cursor { row = 2, col = 1, basename = "dummy_file_b.txt" }
 
   child.lua [[M.navigate_global_marks { direction = "prev" }]]
-  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt", }
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
 end
 
 T["delete_buffer_marks"] = function()
@@ -364,78 +384,86 @@ T["delete_buffer_marks"] = function()
   child.type_keys "j"
   child.lua [[M.toggle_next_global_mark()]]
 
-  expect_sign { letter = "a", set = true, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
-  expect_sign { letter = "b", set = true, }
-  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0, }
-  expect_sign { letter = "A", set = true, }
-  expect_buffer_mark { letter = "A", set = true, row = 3, col = 0, }
+  expect_sign { letter = "a", set = true }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0 }
+  expect_sign { letter = "b", set = true }
+  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0 }
+  expect_sign { letter = "A", set = true }
+  expect_buffer_mark { letter = "A", set = true, row = 3, col = 0 }
 
   child.lua [[M.delete_buffer_marks()]]
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
-  expect_sign { letter = "b", set = false, }
-  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0, }
-  expect_sign { letter = "A", set = false, }
-  expect_buffer_mark { letter = "A", set = false, row = 3, col = 0, }
+  expect_sign { letter = "a", set = false }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0 }
+  expect_sign { letter = "b", set = false }
+  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0 }
+  expect_sign { letter = "A", set = false }
+  expect_buffer_mark { letter = "A", set = false, row = 3, col = 0 }
 end
 
 T["setup"] = MiniTest.new_set()
 T["setup"]["highlight_char_set"] = function()
-  child.g.marks = { highlight_char_set = "b", }
+  child.g.marks = { highlight_char_set = "b" }
   child.lua [[M.setup()]]
 
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0, }
+  expect_sign { letter = "a", set = false }
+  expect_buffer_mark { letter = "a", set = false, row = 1, col = 0 }
   child.type_keys "ma"
-  expect_sign { letter = "a", set = false, }
-  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0, }
+  expect_sign { letter = "a", set = false }
+  expect_buffer_mark { letter = "a", set = true, row = 1, col = 0 }
 
   child.type_keys "j"
 
-  expect_sign { letter = "b", set = false, }
-  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0, }
+  expect_sign { letter = "b", set = false }
+  expect_buffer_mark { letter = "b", set = false, row = 2, col = 0 }
   child.type_keys "mb"
-  expect_sign { letter = "b", set = true, }
-  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0, }
+  expect_sign { letter = "b", set = true }
+  expect_buffer_mark { letter = "b", set = true, row = 2, col = 0 }
 
   child.type_keys "j"
 
-  expect_sign { letter = "c", set = false, }
-  expect_buffer_mark { letter = "c", set = false, row = 2, col = 0, }
+  expect_sign { letter = "c", set = false }
+  expect_buffer_mark { letter = "c", set = false, row = 2, col = 0 }
   child.type_keys "mc"
-  expect_sign { letter = "c", set = false, }
-  expect_buffer_mark { letter = "c", set = true, row = 3, col = 0, }
+  expect_sign { letter = "c", set = false }
+  expect_buffer_mark { letter = "c", set = true, row = 3, col = 0 }
 end
 
 T["refresh_signs"] = MiniTest.new_set {
-  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+  hooks = {
+    pre_case = function()
+      child.lua [[M.setup()]]
+    end,
+  },
 }
 T["refresh_signs"]["restores signs for existing marks"] = function()
   child.api.nvim_buf_set_mark(0, "a", 1, 0, {})
-  child.fn.sign_unplace("marks.nvim", { buffer = 0, })
+  child.fn.sign_unplace("marks.nvim", { buffer = 0 })
 
   child.lua [[M.refresh_signs()]]
 
-  expect_sign { letter = "a", set = true, }
+  expect_sign { letter = "a", set = true }
 end
 
 T["navigation edge cases"] = MiniTest.new_set {
-  hooks = { pre_case = function() child.lua [[M.setup()]] end, },
+  hooks = {
+    pre_case = function()
+      child.lua [[M.setup()]]
+    end,
+  },
 }
 T["navigation edge cases"]["leaves the cursor unchanged when there are no buffer marks"] = function()
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_buffer_marks { direction = "next", }]]
 
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 end
 T["navigation edge cases"]["leaves the cursor unchanged when there are no global marks"] = function()
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 
   child.lua [[M.navigate_global_marks { direction = "next", }]]
 
-  expect_cursor { row = 1, col = 0, }
+  expect_cursor { row = 1, col = 0 }
 end
 
 T["buffer_marks_to_qf_list"] = MiniTest.new_set()
@@ -460,9 +488,9 @@ end
 T["global_marks_to_qf_list"]["skips marks beyond the end of a file"] = function()
   child.lua [[M.setup()]]
   child.cmd "delmarks A-Z"
-  child.api.nvim_win_set_cursor(0, { 3, 0, })
+  child.api.nvim_win_set_cursor(0, { 3, 0 })
   child.type_keys "mA"
-  vim.fn.writefile({ "short", }, dummy_file_a)
+  vim.fn.writefile({ "short" }, dummy_file_a)
 
   child.lua [[M.global_marks_to_qf_list()]]
 
@@ -471,7 +499,7 @@ end
 T["global_marks_to_qf_list"]["skips marks for deleted files"] = function()
   child.lua [[M.setup()]]
   child.cmd "delmarks A-Z"
-  child.api.nvim_win_set_cursor(0, { 1, 0, })
+  child.api.nvim_win_set_cursor(0, { 1, 0 })
   child.type_keys "mA"
   vim.fn.delete(dummy_file_a)
 
@@ -491,13 +519,11 @@ T["buffer_marks_to_qf_list"]["lists buffer marks"] = function()
 
   child.lua [[M.buffer_marks_to_qf_list()]]
   local qf_list = child.fn.getqflist()
-  expect_qf_list(
-    {
-      { col = 0, lnum = 1, text = "a|alpha", },
-      { col = 1, lnum = 2, text = "b|bravo", },
-      { col = 2, lnum = 3, text = "A|charlie", },
-    },
-    qf_list)
+  expect_qf_list({
+    { col = 0, lnum = 1, text = "a|alpha" },
+    { col = 1, lnum = 2, text = "b|bravo" },
+    { col = 2, lnum = 3, text = "A|charlie" },
+  }, qf_list)
 end
 
 T["global_marks_to_qf_list"]["lists global marks"] = function()
@@ -513,13 +539,11 @@ T["global_marks_to_qf_list"]["lists global marks"] = function()
 
   child.lua [[M.global_marks_to_qf_list()]]
   local qf_list = child.fn.getqflist()
-  expect_qf_list(
-    {
-      { col = 0, lnum = 1, text = "A|alpha", },
-      { col = 1, lnum = 2, text = "B|echo", },
-      { col = 2, lnum = 3, text = "C|india", },
-    },
-    qf_list)
+  expect_qf_list({
+    { col = 0, lnum = 1, text = "A|alpha" },
+    { col = 1, lnum = 2, text = "B|echo" },
+    { col = 2, lnum = 3, text = "C|india" },
+  }, qf_list)
 end
 
 return T

@@ -3,14 +3,14 @@ local M = {}
 local ns = vim.api.nvim_create_namespace "marks.nvim"
 
 M.char_sets = {}
-M.char_sets.local_marks = ("abcdefghijklmnopqrstuvwxyz")
+M.char_sets.local_marks = "abcdefghijklmnopqrstuvwxyz"
 M.char_sets.global_marks = M.char_sets.local_marks:upper()
 M.char_sets.number_marks = "0123456789"
 M.char_sets.builtin_marks = "[]<>`\"^.(){}"
-M.char_sets.all_marks = M.char_sets.global_marks ..
-    M.char_sets.local_marks ..
-    M.char_sets.number_marks ..
-    M.char_sets.builtin_marks
+M.char_sets.all_marks = M.char_sets.global_marks
+  .. M.char_sets.local_marks
+  .. M.char_sets.number_marks
+  .. M.char_sets.builtin_marks
 
 --- @generic T
 --- @param val T | nil
@@ -26,7 +26,9 @@ end
 --- @param tbl table
 --- @param ... any
 local tbl_get = function(tbl, ...)
-  if tbl == nil then return nil end
+  if tbl == nil then
+    return nil
+  end
   return vim.tbl_get(tbl, ...)
 end
 
@@ -49,7 +51,9 @@ end
 --- @param msg string
 --- @param ... any
 local notify = function(level, msg, ...)
-  if not gopts().notify then return end
+  if not gopts().notify then
+    return
+  end
 
   msg = "[marks.nvim]: " .. msg
   vim.notify(msg:format(...), level)
@@ -61,7 +65,7 @@ local function get_buffer_mark_pos(mark_name)
   if mark[1] == 0 then
     return nil
   end
-  return { row = mark[1], col = mark[2], }
+  return { row = mark[1], col = mark[2] }
 end
 
 --- @class GlobalMarkInfo
@@ -80,7 +84,7 @@ local function get_global_mark_info(mark_name)
   local bufname = vim.fs.normalize(mark[4])
   local in_cwd = vim.fs.relpath(vim.fn.getcwd(), bufname) ~= nil
   --- @type GlobalMarkInfo
-  return { in_cwd = in_cwd, row = mark[1], col = mark[2], bufnr = mark[3], bufname = bufname, }
+  return { in_cwd = in_cwd, row = mark[1], col = mark[2], bufnr = mark[3], bufname = bufname }
 end
 
 --- @param bufnr number
@@ -89,7 +93,9 @@ local function refresh_mark_signs(bufnr)
     bufnr = vim.api.nvim_get_current_buf()
   end
 
-  if not vim.api.nvim_buf_is_valid(bufnr) then return end
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
 
   -- local bufname = vim.api.nvim_buf_get_name(bufnr)
   -- if bufname == "" then return end
@@ -99,12 +105,14 @@ local function refresh_mark_signs(bufnr)
   -- if not is_normal_buf then return end
 
   local sign_group = "marks.nvim"
-  vim.fn.sign_unplace(sign_group, { buffer = bufnr, })
+  vim.fn.sign_unplace(sign_group, { buffer = bufnr })
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   for letter in gopts().highlight_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
-    if mark_pos == nil then goto continue end
+    if mark_pos == nil then
+      goto continue
+    end
     local id = letter:byte() * 100
 
     local priority = (function()
@@ -113,12 +121,20 @@ local function refresh_mark_signs(bufnr)
       end
       return 1
     end)()
-    vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority, })
+    vim.fn.sign_place(id, sign_group, letter, bufnr, { lnum = mark_pos.row, priority = priority })
 
-    if letter:match "%a" then goto continue end
+    if letter:match "%a" then
+      goto continue
+    end
 
     local row_zero_indexed = mark_pos.row - 1
-    vim.hl.range(bufnr, ns, "MarkCol", { row_zero_indexed, mark_pos.col, }, { row_zero_indexed, mark_pos.col, })
+    vim.hl.range(
+      bufnr,
+      ns,
+      "MarkCol",
+      { row_zero_indexed, mark_pos.col },
+      { row_zero_indexed, mark_pos.col }
+    )
 
     ::continue::
   end
@@ -126,15 +142,17 @@ end
 
 vim.g.marks_setup_called = false
 M.setup = function()
-  if vim.g.marks_setup_called then return end
+  if vim.g.marks_setup_called then
+    return
+  end
   vim.g.marks_setup_called = true
   local opts = gopts()
 
-  vim.api.nvim_set_hl(0, "MarkCol", { default = true, link = "Search", })
-  vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search", })
+  vim.api.nvim_set_hl(0, "MarkCol", { default = true, link = "Search" })
+  vim.api.nvim_set_hl(0, "MarkRow", { default = true, link = "Search" })
 
   for letter in opts.highlight_char_set:gmatch "." do
-    vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow", })
+    vim.fn.sign_define(letter, { text = letter, texthl = "MarkRow" })
   end
 
   local events = {
@@ -169,7 +187,7 @@ M.setup = function()
   end
 
   -- " cursor when last exiting the current buffer
-  if opts.highlight_char_set:match '["]' then
+  if opts.highlight_char_set:match "[\"]" then
     events["BufLeave"] = true
     events["BufWinLeave"] = true
   end
@@ -202,7 +220,9 @@ M.setup = function()
   end
 
   vim.api.nvim_create_autocmd(event_list, {
-    callback = function(args) refresh_mark_signs(args.buf) end,
+    callback = function(args)
+      refresh_mark_signs(args.buf)
+    end,
     desc = "Refresh the mark signs",
   })
 end
@@ -264,7 +284,9 @@ end
 M.get_next_avail_local_mark = function()
   for letter in M.char_sets.local_marks:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
-    if mark_pos == nil then return letter end
+    if mark_pos == nil then
+      return letter
+    end
   end
   return nil
 end
@@ -272,7 +294,9 @@ end
 M.get_next_avail_global_mark = function()
   for letter in M.char_sets.global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
-    if global_mark_info == nil then return letter end
+    if global_mark_info == nil then
+      return letter
+    end
   end
   return nil
 end
@@ -315,7 +339,9 @@ M.navigate_global_marks = function(opts)
     notify(vim.log.levels.INFO, "No global marks")
     return
   end
-  if #global_marks_info_list == 1 then return end
+  if #global_marks_info_list == 1 then
+    return
+  end
 
   local next_idx = curr_idx + 1
   if next_idx > #global_marks_info_list then
@@ -323,7 +349,7 @@ M.navigate_global_marks = function(opts)
   end
   local next_mark_info = global_marks_info_list[next_idx]
   vim.cmd.edit(next_mark_info.bufname)
-  vim.api.nvim_win_set_cursor(0, { next_mark_info.row, next_mark_info.col, })
+  vim.api.nvim_win_set_cursor(0, { next_mark_info.row, next_mark_info.col })
 end
 
 --- @class MarksNavigateBufferMarksOpts
@@ -374,14 +400,16 @@ M.navigate_buffer_marks = function(_opts)
     end)()
 
     if row_condition then
-      vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col, })
+      vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col })
       return
     end
   end
 
-  if #mark_pos_list == 0 then return end
+  if #mark_pos_list == 0 then
+    return
+  end
   local mark_pos = mark_pos_list[1]
-  vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col, })
+  vim.api.nvim_win_set_cursor(0, { mark_pos.row, mark_pos.col })
 end
 
 M.delete_buffer_marks = function()
@@ -406,16 +434,15 @@ end
 M.buffer_marks_to_qf_list = function(_opts)
   --- @type MarksBufferMarksToQfListOpts
   local opts = {}
-  opts.qf_list_char_set = default(
-    tbl_get(_opts, "qf_list_char_set"),
-    M.char_sets.local_marks .. M.char_sets.global_marks
-  )
+  opts.qf_list_char_set =
+    default(tbl_get(_opts, "qf_list_char_set"), M.char_sets.local_marks .. M.char_sets.global_marks)
   local qf_list = {}
   for letter in opts.qf_list_char_set:gmatch "." do
     local mark_pos = get_buffer_mark_pos(letter)
     if mark_pos ~= nil then
       local row_zero_indexed = mark_pos.row - 1
-      local line = vim.trim(vim.api.nvim_buf_get_lines(0, row_zero_indexed, row_zero_indexed + 1, false)[1])
+      local line =
+        vim.trim(vim.api.nvim_buf_get_lines(0, row_zero_indexed, row_zero_indexed + 1, false)[1])
       table.insert(qf_list, {
         bufnr = 0,
         text = ("%s|%s"):format(letter, line),
@@ -433,17 +460,25 @@ M.global_marks_to_qf_list = function()
   local qf_list = {}
   for letter in M.char_sets.global_marks:gmatch "." do
     local global_mark_info = get_global_mark_info(letter)
-    if global_mark_info == nil then goto continue end
-    if not global_mark_info.in_cwd then goto continue end
+    if global_mark_info == nil then
+      goto continue
+    end
+    if not global_mark_info.in_cwd then
+      goto continue
+    end
 
     local ok, lines = pcall(
       vim.fn.readfile,
       vim.fs.normalize(global_mark_info.bufname),
       tostring(global_mark_info.row)
     )
-    if not ok then goto continue end
+    if not ok then
+      goto continue
+    end
     local line = vim.list_slice(lines, global_mark_info.row, global_mark_info.row)[1]
-    if line == nil then goto continue end
+    if line == nil then
+      goto continue
+    end
     line = vim.trim(line)
 
     table.insert(qf_list, {

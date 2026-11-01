@@ -1,8 +1,8 @@
-vim.g.marks = { skip_setup = true, }
+vim.g.marks = { skip_setup = true }
 -- https://github.com/echasnovski/mini.nvim/blob/main/TESTING.md#file-organization
 vim.cmd [[let &rtp.=','.getcwd()]]
 
 if #vim.api.nvim_list_uis() == 0 then
   vim.cmd "set rtp+=deps/mini.test"
-  require "mini.test".setup()
+  require("mini.test").setup()
 end
