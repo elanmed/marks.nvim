@@ -1,3 +1,4 @@
+local MiniTest = require "mini.test"
 local child = MiniTest.new_child_neovim()
 
 local dummy_dir = "dummy_dir"
@@ -318,6 +319,17 @@ T["navigate_buffer_marks"]["navigates to the next, prev marks in the buffer"] = 
   child.lua [[M.navigate_buffer_marks { direction = "prev" }]]
   expect_cursor { row = 1, col = 0 }
 end
+T["navigate_buffer_marks"]["navigates between marks on the same line"] = function()
+  child.api.nvim_buf_set_mark(0, "b", 1, 3, {})
+  child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor { row = 1, col = 3 }
+
+  child.lua [[M.navigate_buffer_marks { direction = "next", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor { row = 1, col = 0 }
+
+  child.lua [[M.navigate_buffer_marks { direction = "prev", navigate_char_set = M.char_sets.local_marks }]]
+  expect_cursor { row = 1, col = 3 }
+end
 T["navigate_buffer_marks"]["respects opts.navigate_char_set"] = function()
   expect_cursor { row = 1, col = 0 }
 
@@ -374,6 +386,26 @@ T["navigate_global_marks"]["navigates to the next, prev global marks"] = functio
   child.lua [[M.navigate_global_marks { direction = "prev" }]]
   expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
 end
+T["navigate_global_marks"]["starts at the first eligible mark from an unmarked buffer"] = function()
+  child.cmd("edit " .. dummy_file_sibling)
+  child.lua [[M.navigate_global_marks { direction = "next" }]]
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
+
+  child.cmd("edit " .. dummy_file_sibling)
+  child.lua [[M.navigate_global_marks { direction = "prev" }]]
+  expect_cursor { row = 3, col = 2, basename = "dummy_file_c.txt" }
+end
+T["navigate_global_marks"]["navigates to the sole mark from an unmarked buffer"] = function()
+  child.cmd "delmarks B-Z"
+  child.cmd("edit " .. dummy_file_sibling)
+
+  child.lua [[M.navigate_global_marks { direction = "next" }]]
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
+
+  child.cmd("edit " .. dummy_file_sibling)
+  child.lua [[M.navigate_global_marks { direction = "prev" }]]
+  expect_cursor { row = 1, col = 0, basename = "dummy_file_a.txt" }
+end
 
 T["delete_buffer_marks"] = function()
   child.lua [[M.setup()]]
@@ -401,6 +433,15 @@ T["delete_buffer_marks"] = function()
 end
 
 T["setup"] = MiniTest.new_set()
+T["setup"]["honors skip_setup and initializes when enabled"] = function()
+  child.g.marks = { skip_setup = true }
+  child.lua [[vim.cmd.runtime("plugin/marks.lua")]]
+  MiniTest.expect.equality(false, child.g.marks_setup_called)
+
+  child.g.marks = { skip_setup = false }
+  child.lua [[vim.cmd.runtime("plugin/marks.lua")]]
+  MiniTest.expect.equality(true, child.g.marks_setup_called)
+end
 T["setup"]["highlight_char_set"] = function()
   child.g.marks = { highlight_char_set = "b" }
   child.lua [[M.setup()]]
@@ -443,6 +484,15 @@ T["refresh_signs"]["restores signs for existing marks"] = function()
 
   expect_sign { letter = "a", set = true }
 end
+T["refresh_signs"]["clears signs for deleted marks on buffer entry"] = function()
+  child.api.nvim_buf_set_mark(0, "a", 1, 0, {})
+  child.lua [[M.refresh_signs()]]
+  expect_sign { letter = "a", set = true }
+
+  child.api.nvim_buf_del_mark(0, "a")
+  child.cmd "doautocmd BufEnter"
+  expect_sign { letter = "a", set = false }
+end
 
 T["navigation edge cases"] = MiniTest.new_set {
   hooks = {
@@ -463,6 +513,13 @@ T["navigation edge cases"]["leaves the cursor unchanged when there are no global
 
   child.lua [[M.navigate_global_marks { direction = "next", }]]
 
+  expect_cursor { row = 1, col = 0 }
+end
+T["navigation edge cases"]["leaves the cursor unchanged for invalid directions"] = function()
+  child.lua [[M.navigate_buffer_marks { direction = "invalid" }]]
+  expect_cursor { row = 1, col = 0 }
+
+  child.lua [[M.navigate_global_marks { direction = "invalid" }]]
   expect_cursor { row = 1, col = 0 }
 end
 
@@ -520,10 +577,12 @@ T["buffer_marks_to_qf_list"]["lists buffer marks"] = function()
   child.lua [[M.buffer_marks_to_qf_list()]]
   local qf_list = child.fn.getqflist()
   expect_qf_list({
-    { col = 0, lnum = 1, text = "a|alpha" },
-    { col = 1, lnum = 2, text = "b|bravo" },
-    { col = 2, lnum = 3, text = "A|charlie" },
+    { col = 1, lnum = 1, text = "a|alpha" },
+    { col = 2, lnum = 2, text = "b|bravo" },
+    { col = 3, lnum = 3, text = "A|charlie" },
   }, qf_list)
+  child.cmd "cc 2"
+  expect_cursor { row = 2, col = 1, basename = "dummy_file_a.txt" }
 end
 
 T["global_marks_to_qf_list"]["lists global marks"] = function()
@@ -540,9 +599,9 @@ T["global_marks_to_qf_list"]["lists global marks"] = function()
   child.lua [[M.global_marks_to_qf_list()]]
   local qf_list = child.fn.getqflist()
   expect_qf_list({
-    { col = 0, lnum = 1, text = "A|alpha" },
-    { col = 1, lnum = 2, text = "B|echo" },
-    { col = 2, lnum = 3, text = "C|india" },
+    { col = 1, lnum = 1, text = "A|alpha" },
+    { col = 2, lnum = 2, text = "B|echo" },
+    { col = 3, lnum = 3, text = "C|india" },
   }, qf_list)
 end
 
